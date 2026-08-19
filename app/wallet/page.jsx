@@ -1,0 +1,136 @@
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import FileUpload from "@/components/FileUpload";
+
+const WALLET_NAME = "USDT (TRC20) - يُحدَّث من الإدارة";
+const WALLET_ADDRESS = "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
+export default function WalletPage() {
+  const [balance, setBalance] = useState(0);
+  const [txns, setTxns] = useState([]);
+  const [amount, setAmount] = useState("");
+  const [code, setCode] = useState("");
+  const [senderWallet, setSenderWallet] = useState("");
+  const [receiptPath, setReceiptPath] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [msg, setMsg] = useState(null);
+
+  async function loadData() {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    setUserId(user.id);
+    const { data: profile } = await supabase.from("users").select("balance").eq("id", user.id).single();
+    setBalance(profile?.balance ?? 0);
+    const { data: transactions } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setTxns(transactions ?? []);
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function submitDeposit(e) {
+    e.preventDefault();
+    setMsg(null);
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (!user) return setMsg("الرجاء تسجيل الدخول أولاً.");
+
+    const { error } = await supabase.from("deposits").insert({
+      user_id: user.id,
+      amount: Number(amount),
+      transaction_code: code,
+      sender_wallet: senderWallet,
+      receipt_url: receiptPath
+    });
+
+    if (error) setMsg(error.message);
+    else {
+      setMsg("تم إرسال طلب الشحن، بانتظار مراجعة الإدارة.");
+      setAmount("");
+      setCode("");
+      setSenderWallet("");
+      setReceiptPath(null);
+      loadData();
+    }
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6">
+      <div>
+        <div className="card">
+          <p className="text-gray-500">الرصيد الحالي</p>
+          <p className="text-3xl font-extrabold text-brand-600">${balance}</p>
+        </div>
+
+        <div className="card mt-4">
+          <h2 className="font-bold mb-2">تعليمات التحويل</h2>
+          <p className="text-sm">اسم المحفظة: {WALLET_NAME}</p>
+          <p className="text-sm break-all">رقم المحفظة: {WALLET_ADDRESS}</p>
+          <p className="text-xs text-gray-500 mt-2">
+            حوّل المبلغ إلى المحفظة أعلاه، ثم أرسل طلب شحن الرصيد بالتفاصيل أدناه.
+          </p>
+        </div>
+
+        <form onSubmit={submitDeposit} className="card mt-4 space-y-2">
+          <h2 className="font-bold mb-2">طلب شحن الرصيد</h2>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="المبلغ المحول"
+            className="w-full border rounded-lg p-2"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+          <input
+            placeholder="رقم/كود الحوالة"
+            className="w-full border rounded-lg p-2"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
+          <input
+            placeholder="رقم المحفظة المرسل منها"
+            className="w-full border rounded-lg p-2"
+            value={senderWallet}
+            onChange={(e) => setSenderWallet(e.target.value)}
+          />
+          {userId && (
+            <FileUpload bucket="receipts" pathPrefix={userId} label="صورة إيصال التحويل" onUploaded={setReceiptPath} />
+          )}
+          <button className="btn-primary w-full">إرسال طلب الشحن</button>
+          {msg && <p className="text-sm text-brand-600">{msg}</p>}
+        </form>
+      </div>
+
+      <div>
+        <h2 className="font-bold mb-2">سجل المعاملات</h2>
+        <div className="space-y-2">
+          {txns.map((t) => (
+            <div key={t.id} className="card flex justify-between text-sm">
+              <div>
+                <p className="font-bold">{t.description}</p>
+                <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+              </div>
+              <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                {t.amount >= 0 ? "+" : ""}
+                {t.amount}$
+              </p>
+            </div>
+          ))}
+          {txns.length === 0 && <p className="text-gray-500 text-sm">لا توجد معاملات بعد.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
