@@ -95,7 +95,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
             required
           />
           <textarea
@@ -103,7 +103,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
           />
           <FileUpload
             bucket="product-images"
@@ -121,7 +121,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.product_value}
             onChange={(e) => update("product_value", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
             required
           />
           <input
@@ -130,7 +130,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.ticket_price}
             onChange={(e) => update("ticket_price", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
             required
           />
           <input
@@ -139,7 +139,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.total_tickets}
             onChange={(e) => update("total_tickets", e.target.value)}
-            disabled={form.sold_tickets > 0}
+           
             required
           />
           <input
@@ -148,7 +148,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.max_tickets_per_user}
             onChange={(e) => update("max_tickets_per_user", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
           />
           <label className="block text-sm text-gray-500">تاريخ ووقت بداية السحب</label>
           <input
@@ -156,7 +156,7 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.start_at}
             onChange={(e) => update("start_at", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
             required
           />
           <label className="block text-sm text-gray-500">تاريخ ووقت نهاية السحب</label>
@@ -165,10 +165,10 @@ export default function EditDrawPage() {
             className="w-full border rounded-lg p-2"
             value={form.end_at}
             onChange={(e) => update("end_at", e.target.value)}
-            disabled={form.sold_tickets > 0}
+            
             required
           />
-          <button disabled={loading || form.sold_tickets > 0} className="btn-primary w-full disabled:opacity-50">
+                    <button disabled={loading} className="btn-primary w-full">
             {loading ? "...جارِ الحفظ" : "حفظ التعديلات"}
           </button>
         </form>
