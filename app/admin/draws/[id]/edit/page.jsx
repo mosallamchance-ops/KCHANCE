@@ -88,11 +88,7 @@ export default function EditDrawPage() {
     <AdminGuard>
       <div className="max-w-lg mx-auto card">
         <h1 className="text-xl font-bold mb-4">تعديل السحب</h1>
-        {form.sold_tickets > 0 && (
-          <p className="text-red-600 text-sm mb-3">
-            تم بيع {form.sold_tickets} تذكرة من هذا السحب — لا يمكن تعديله.
-          </p>
-        )}
+        
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             placeholder="اسم المنتج"
