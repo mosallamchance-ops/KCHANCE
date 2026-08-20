@@ -25,7 +25,7 @@ export default function AdminCreateDrawPage() {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  async function handleSubmit(e) {
+   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setMsg(null);
@@ -33,8 +33,8 @@ export default function AdminCreateDrawPage() {
       data: { session }
     } = await supabase.auth.getSession();
 
-    const res = await fetch(`/api/admin/draws/${id}`, {
-      method: "PUT",
+    const res = await fetch("/api/admin/draws", {
+      method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
       body: JSON.stringify({
         ...form,
