@@ -16,10 +16,14 @@ export default function AuthPage() {
     setMsg(null);
 
     if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { phone } }
+      });
       if (error) return setMsg(error.message);
       if (data.user) {
-        await supabase.from("users").insert({ id: data.user.id, phone });
+        await supabase.from("users").upsert({ id: data.user.id, phone });
       }
       setMsg("تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتفعيله.");
     } else {
