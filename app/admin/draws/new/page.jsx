@@ -33,15 +33,17 @@ export default function AdminCreateDrawPage() {
       data: { session }
     } = await supabase.auth.getSession();
 
-    const res = await fetch("/api/admin/draws", {
-      method: "POST",
+    const res = await fetch(`/api/admin/draws/${id}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
       body: JSON.stringify({
         ...form,
         product_value: Number(form.product_value),
         ticket_price: Number(form.ticket_price),
         total_tickets: Number(form.total_tickets),
-        max_tickets_per_user: Number(form.max_tickets_per_user)
+        max_tickets_per_user: Number(form.max_tickets_per_user),
+        start_at: new Date(form.start_at).toISOString(),
+        end_at: new Date(form.end_at).toISOString()
       })
     });
     const result = await res.json();
