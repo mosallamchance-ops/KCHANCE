@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import FileUpload from "@/components/FileUpload";
+import AdminGuard from "@/components/AdminGuard";
 
 const empty = {
   name: "",
@@ -54,86 +55,88 @@ export default function AdminCreateDrawPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto card">
-      <h1 className="text-xl font-bold mb-4">إضافة سحب جديد</h1>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          placeholder="اسم المنتج"
-          className="w-full border rounded-lg p-2"
-          value={form.name}
-          onChange={(e) => update("name", e.target.value)}
-          required
-        />
-        <textarea
-          placeholder="وصف المنتج"
-          className="w-full border rounded-lg p-2"
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-        />
-        <FileUpload
-          bucket="product-images"
-          label="صورة المنتج"
-          viaServerEndpoint="/api/admin/upload-image"
-          onUploaded={(url) => update("image_url", url)}
-        />
-        {form.image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={form.image_url} alt="" className="h-24 rounded-lg object-cover" />
+    <AdminGuard>
+      <div className="max-w-lg mx-auto card">
+        <h1 className="text-xl font-bold mb-4">إضافة سحب جديد</h1>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            placeholder="اسم المنتج"
+            className="w-full border rounded-lg p-2"
+            value={form.name}
+            onChange={(e) => update("name", e.target.value)}
+            required
+          />
+          <textarea
+            placeholder="وصف المنتج"
+            className="w-full border rounded-lg p-2"
+            value={form.description}
+            onChange={(e) => update("description", e.target.value)}
+          />
+          <FileUpload
+            bucket="product-images"
+            label="صورة المنتج"
+            viaServerEndpoint="/api/admin/upload-image"
+            onUploaded={(url) => update("image_url", url)}
+          />
+          {form.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={form.image_url} alt="" className="h-24 rounded-lg object-cover" />
+          )}
+          <input
+            type="number"
+            placeholder="قيمة المنتج ($)"
+            className="w-full border rounded-lg p-2"
+            value={form.product_value}
+            onChange={(e) => update("product_value", e.target.value)}
+            required
+          />
+          <input
+            type="number"
+            placeholder="سعر التذكرة ($)"
+            className="w-full border rounded-lg p-2"
+            value={form.ticket_price}
+            onChange={(e) => update("ticket_price", e.target.value)}
+            required
+          />
+          <input
+            type="number"
+            placeholder="العدد الإجمالي للتذاكر"
+            className="w-full border rounded-lg p-2"
+            value={form.total_tickets}
+            onChange={(e) => update("total_tickets", e.target.value)}
+            required
+          />
+          <input
+            type="number"
+            placeholder="الحد الأقصى للتذاكر لكل مستخدم"
+            className="w-full border rounded-lg p-2"
+            value={form.max_tickets_per_user}
+            onChange={(e) => update("max_tickets_per_user", e.target.value)}
+          />
+          <label className="block text-sm text-gray-500">تاريخ ووقت بداية السحب</label>
+          <input
+            type="datetime-local"
+            className="w-full border rounded-lg p-2"
+            value={form.start_at}
+            onChange={(e) => update("start_at", e.target.value)}
+            required
+          />
+          <label className="block text-sm text-gray-500">تاريخ ووقت نهاية السحب</label>
+          <input
+            type="datetime-local"
+            className="w-full border rounded-lg p-2"
+            value={form.end_at}
+            onChange={(e) => update("end_at", e.target.value)}
+            required
+          />
+          <button disabled={loading} className="btn-primary w-full">
+            {loading ? "...جارِ الإنشاء" : "إنشاء السحب"}
+          </button>
+        </form>
+        {msg && (
+          <p className={`mt-3 font-bold ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
         )}
-        <input
-          type="number"
-          placeholder="قيمة المنتج ($)"
-          className="w-full border rounded-lg p-2"
-          value={form.product_value}
-          onChange={(e) => update("product_value", e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="سعر التذكرة ($)"
-          className="w-full border rounded-lg p-2"
-          value={form.ticket_price}
-          onChange={(e) => update("ticket_price", e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="العدد الإجمالي للتذاكر"
-          className="w-full border rounded-lg p-2"
-          value={form.total_tickets}
-          onChange={(e) => update("total_tickets", e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="الحد الأقصى للتذاكر لكل مستخدم"
-          className="w-full border rounded-lg p-2"
-          value={form.max_tickets_per_user}
-          onChange={(e) => update("max_tickets_per_user", e.target.value)}
-        />
-        <label className="block text-sm text-gray-500">تاريخ ووقت بداية السحب</label>
-        <input
-          type="datetime-local"
-          className="w-full border rounded-lg p-2"
-          value={form.start_at}
-          onChange={(e) => update("start_at", e.target.value)}
-          required
-        />
-        <label className="block text-sm text-gray-500">تاريخ ووقت نهاية السحب</label>
-        <input
-          type="datetime-local"
-          className="w-full border rounded-lg p-2"
-          value={form.end_at}
-          onChange={(e) => update("end_at", e.target.value)}
-          required
-        />
-        <button disabled={loading} className="btn-primary w-full">
-          {loading ? "...جارِ الإنشاء" : "إنشاء السحب"}
-        </button>
-      </form>
-      {msg && (
-        <p className={`mt-3 font-bold ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
-      )}
-    </div>
+      </div>
+    </AdminGuard>
   );
 }
