@@ -1,5 +1,5 @@
 import "./globals.css";
-import NotificationBell from "@/components/NotificationBell";
+import Nav from "@/components/Nav";
 
 export const metadata = {
   title: "منصة السحوبات",
@@ -15,21 +15,7 @@ export default function RootLayout({ children }) {
             <a href="/" className="text-xl font-extrabold text-brand-600">
               منصة السحوبات
             </a>
-            <nav className="flex items-center gap-4 text-sm font-medium">
-              <a href="/" className="hover:text-brand-600">
-                السحوبات
-              </a>
-              <a href="/results" className="hover:text-brand-600">
-                النتائج
-              </a>
-              <a href="/account" className="hover:text-brand-600">
-                حسابي
-              </a>
-              <a href="/wallet" className="hover:text-brand-600">
-                رصيدي
-              </a>
-              <NotificationBell />
-            </nav>
+            <Nav />
           </div>
         </header>
         <main className="max-w-6xl mx-auto p-4">{children}</main>
