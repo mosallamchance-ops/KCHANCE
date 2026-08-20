@@ -4,7 +4,8 @@ import { supabase } from "@/lib/supabaseClient";
 
 // bucket: 'product-images' (public) or 'receipts' (private)
 // pathPrefix: optional folder, e.g. the user's id for receipts (required by storage policy)
-export default function FileUpload({ bucket, pathPrefix = "", onUploaded, label }) {
+// viaServerEndpoint: if set, uploads through this API route (server-side, bypasses client RLS)
+export default function FileUpload({ bucket, pathPrefix = "", onUploaded, label, viaServerEndpoint }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [fileName, setFileName] = useState(null);
@@ -14,6 +15,28 @@ export default function FileUpload({ bucket, pathPrefix = "", onUploaded, label 
     if (!file) return;
     setUploading(true);
     setError(null);
+
+    if (viaServerEndpoint) {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(viaServerEndpoint, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        body: formData
+      });
+      const result = await res.json();
+      setUploading(false);
+      if (!res.ok) {
+        setError(result.error);
+        return;
+      }
+      setFileName(file.name);
+      onUploaded(result.url);
+      return;
+    }
 
     const ext = file.name.split(".").pop();
     const path = `${pathPrefix ? pathPrefix + "/" : ""}${crypto.randomUUID()}.${ext}`;
