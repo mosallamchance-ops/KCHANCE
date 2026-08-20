@@ -73,6 +73,7 @@ export default function AdminCreateDrawPage() {
         <FileUpload
           bucket="product-images"
           label="صورة المنتج"
+          viaServerEndpoint="/api/admin/upload-image"
           onUploaded={(url) => update("image_url", url)}
         />
         {form.image_url && (
