@@ -45,6 +45,9 @@ export default function AdminDashboardPage() {
             <Link href="/admin/draws/new" className="btn-primary">
               + سحب جديد
             </Link>
+            <Link href="/admin/draws" className="py-2 px-4 rounded-lg border">
+                كل السحوبات
+                </Link>
             <Link href="/admin/deposits" className="py-2 px-4 rounded-lg border">
               طلبات الشحن
             </Link>
