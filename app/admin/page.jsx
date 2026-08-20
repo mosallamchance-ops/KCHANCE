@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import AdminGuard from "@/components/AdminGuard";
 
 const cards = [
   { key: "total_users", label: "عدد المستخدمين" },
@@ -36,37 +37,39 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">لوحة تحكم الإدارة</h1>
-        <div className="flex gap-3 text-sm">
-          <Link href="/admin/draws/new" className="btn-primary">
-            + سحب جديد
-          </Link>
-          <Link href="/admin/deposits" className="py-2 px-4 rounded-lg border">
-            طلبات الشحن
-          </Link>
-          <Link href="/admin/winners" className="py-2 px-4 rounded-lg border">
-            الفائزون والجوائز
-          </Link>
+    <AdminGuard>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold">لوحة تحكم الإدارة</h1>
+          <div className="flex gap-3 text-sm">
+            <Link href="/admin/draws/new" className="btn-primary">
+              + سحب جديد
+            </Link>
+            <Link href="/admin/deposits" className="py-2 px-4 rounded-lg border">
+              طلبات الشحن
+            </Link>
+            <Link href="/admin/winners" className="py-2 px-4 rounded-lg border">
+              الفائزون والجوائز
+            </Link>
+          </div>
         </div>
+
+        {error && <p className="text-red-600">{error}</p>}
+
+        {stats && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {cards.map((c) => (
+              <div key={c.key} className="card">
+                <p className="text-xs text-gray-500">{c.label}</p>
+                <p className="text-2xl font-extrabold text-brand-600">
+                  {c.money ? "$" : ""}
+                  {stats[c.key]}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      {error && <p className="text-red-600">{error}</p>}
-
-      {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {cards.map((c) => (
-            <div key={c.key} className="card">
-              <p className="text-xs text-gray-500">{c.label}</p>
-              <p className="text-2xl font-extrabold text-brand-600">
-                {c.money ? "$" : ""}
-                {stats[c.key]}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </AdminGuard>
   );
 }
