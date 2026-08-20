@@ -41,13 +41,9 @@ export default function AdminDrawsListPage() {
                   {d.sold_tickets} / {d.total_tickets} تذكرة — ${d.ticket_price} — {statusAr[d.status]}
                 </p>
               </div>
-              {d.sold_tickets === 0 ? (
-                <Link href={`/admin/draws/${d.id}/edit`} className="py-2 px-4 rounded-lg border">
-                  تعديل
-                </Link>
-              ) : (
-                <span className="text-xs text-gray-400">غير قابل للتعديل (تم بيع تذاكر)</span>
-              )}
+              <Link href={`/admin/draws/${d.id}/edit`} className="py-2 px-4 rounded-lg border">
+                تعديل
+              </Link>
             </div>
           ))}
           {draws.length === 0 && <p className="text-gray-500">لا توجد سحوبات بعد.</p>}
