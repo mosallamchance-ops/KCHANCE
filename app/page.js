@@ -2,7 +2,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import Countdown from "@/components/Countdown";
 import Link from "next/link";
 
-export const revalidate = 30; // refresh listing every 30s
+export const revalidate = 0; // no caching while testing
 
 export default async function HomePage() {
   const { data: draws, error } = await supabaseAdmin
