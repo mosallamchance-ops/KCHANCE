@@ -21,16 +21,13 @@ export default function EditDrawPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-      const res = await fetch(`/api/admin/draws/${id}`, {
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-        cache: "no-store"
-      });
-      const result = await res.json();
-      if (res.ok) {
-        const d = result.draw;
+      const { data: d, error } = await supabase
+        .from("draws")
+        .select("*, products(*)")
+        .eq("id", id)
+        .single();
+
+      if (d) {
         setForm({
           name: d.products.name,
           description: d.products.description || "",
@@ -44,7 +41,7 @@ export default function EditDrawPage() {
           sold_tickets: d.sold_tickets
         });
       } else {
-        setMsg({ type: "error", text: result.error });
+        setMsg({ type: "error", text: error?.message || "تعذر تحميل بيانات السحب" });
       }
     }
     load();
