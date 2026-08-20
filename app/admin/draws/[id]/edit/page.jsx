@@ -69,7 +69,9 @@ export default function EditDrawPage() {
         product_value: Number(form.product_value),
         ticket_price: Number(form.ticket_price),
         total_tickets: Number(form.total_tickets),
-        max_tickets_per_user: Number(form.max_tickets_per_user)
+        max_tickets_per_user: Number(form.max_tickets_per_user),
+        start_at: new Date(form.start_at).toISOString(),
+        end_at: new Date(form.end_at).toISOString()
       })
     });
     const result = await res.json();
