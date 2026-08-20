@@ -43,12 +43,7 @@ export async function PUT(request, { params }) {
     .single();
   if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 404 });
 
-  if (existing.sold_tickets > 0) {
-    return NextResponse.json(
-      { error: "لا يمكن تعديل هذا السحب لأنه تم بيع تذاكر منه بالفعل." },
-      { status: 400 }
-    );
-  }
+ 
 
   const body = await request.json();
   const {
