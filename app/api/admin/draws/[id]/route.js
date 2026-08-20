@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-  return NextResponse.json({ draw: data });
+  return NextResponse.json({ draw: data }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
 
 export async function PUT(request, { params }) {
