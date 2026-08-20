@@ -25,7 +25,8 @@ export default function EditDrawPage() {
         data: { session }
       } = await supabase.auth.getSession();
       const res = await fetch(`/api/admin/draws/${id}`, {
-        headers: { Authorization: `Bearer ${session?.access_token}` }
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        cache: "no-store"
       });
       const result = await res.json();
       if (res.ok) {
