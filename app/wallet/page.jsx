@@ -6,6 +6,7 @@ import FileUpload from "@/components/FileUpload";
 const WALLET_NAME = "USDT (TRC20) - يُحدَّث من الإدارة";
 const WALLET_ADDRESS = "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
+
 export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [txns, setTxns] = useState([]);
