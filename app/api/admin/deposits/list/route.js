@@ -23,11 +23,11 @@ export async function GET(request) {
 
   const { data, error } = await supabaseAdmin
     .from("deposits")
-    .select("*, users(phone, first_name, last_name)")
+    .select("*")
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ deposits: data });
+  return NextResponse.json({ deposits: data, count: data?.length });
 }
