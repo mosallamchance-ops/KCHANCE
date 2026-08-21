@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function GET(request) {
   const authHeader = request.headers.get("authorization") || "";
@@ -24,18 +28,31 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
 
-  let query = supabaseAdmin
-    .from("users")
-    .select("id, first_name, last_name, phone, balance, status, created_at")
-    .order("created_at", { ascending: false })
-    .limit(50);
-
+  let filter = "";
   if (q) {
-    query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,phone.ilike.%${q}%`);
+    const encoded = encodeURIComponent(q);
+    filter = `&or=(first_name.ilike.*${encoded}*,last_name.ilike.*${encoded}*,phone.ilike.*${encoded}*)`;
   }
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Direct REST call to Supabase's database API, always fresh, never cached —
+  // same fix as the deposits list and user detail routes.
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/users?select=id,first_name,last_name,phone,balance,status,created_at&order=created_at.desc&limit=50${filter}`,
+    {
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`
+      },
+      cache: "no-store"
+    }
+  );
 
-  return NextResponse.json({ users: data });
+  if (!res.ok) {
+    const errText = await res.text();
+    return NextResponse.json({ error: errText }, { status: 500 });
+  }
+
+  const data = await res.json();
+
+  return NextResponse.json({ users: data }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
