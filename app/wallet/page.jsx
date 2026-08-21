@@ -15,6 +15,10 @@ export default function WalletPage() {
   const [receiptPath, setReceiptPath] = useState(null);
   const [userId, setUserId] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [wAmount, setWAmount] = useState("");
+  const [wAddress, setWAddress] = useState("");
+  const [wMsg, setWMsg] = useState(null);
+  const [wLoading, setWLoading] = useState(false);
 
   async function loadData() {
     const {
@@ -60,6 +64,31 @@ export default function WalletPage() {
       setCode("");
       setSenderWallet("");
       setReceiptPath(null);
+      loadData();
+    }
+  }
+
+  async function submitWithdrawal(e) {
+    e.preventDefault();
+    setWMsg(null);
+    setWLoading(true);
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    const res = await fetch("/api/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ amount: Number(wAmount), wallet_address: wAddress })
+    });
+    const result = await res.json();
+    setWLoading(false);
+
+    if (!res.ok) setWMsg({ type: "error", text: result.error });
+    else {
+      setWMsg({ type: "success", text: "تم إرسال طلب السحب، بانتظار مراجعة الإدارة." });
+      setWAmount("");
+      setWAddress("");
       loadData();
     }
   }
@@ -110,6 +139,34 @@ export default function WalletPage() {
           )}
           <button className="btn-primary w-full">إرسال طلب الشحن</button>
           {msg && <p className="text-sm text-brand-600">{msg}</p>}
+        </form>
+
+        <form onSubmit={submitWithdrawal} className="card mt-4 space-y-2">
+          <h2 className="font-bold mb-2">طلب سحب الرصيد</h2>
+          <input
+            type="number"
+            step="0.01"
+            max={balance}
+            placeholder="المبلغ المراد سحبه"
+            className="w-full border rounded-lg p-2"
+            value={wAmount}
+            onChange={(e) => setWAmount(e.target.value)}
+            required
+          />
+          <input
+            placeholder="عنوان محفظتك (لاستلام المبلغ)"
+            className="w-full border rounded-lg p-2"
+            value={wAddress}
+            onChange={(e) => setWAddress(e.target.value)}
+            required
+          />
+          <p className="text-xs text-gray-500">سيتم خصم المبلغ من رصيدك فوراً لحين مراجعة الطلب من الإدارة.</p>
+          <button disabled={wLoading} className="btn-primary w-full">
+            {wLoading ? "...جارِ الإرسال" : "إرسال طلب السحب"}
+          </button>
+          {wMsg && (
+            <p className={`text-sm ${wMsg.type === "error" ? "text-red-600" : "text-brand-600"}`}>{wMsg.text}</p>
+          )}
         </form>
       </div>
 
