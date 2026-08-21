@@ -1,0 +1,172 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import AdminGuard from "@/components/AdminGuard";
+
+export default function AdminUserDetailPage() {
+  const { id } = useParams();
+  const [data, setData] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const [notifTitle, setNotifTitle] = useState("");
+  const [notifMsg, setNotifMsg] = useState("");
+  const [notifStatus, setNotifStatus] = useState(null);
+
+  async function load() {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const res = await fetch(`/api/admin/users/${id}`, {
+      headers: { Authorization: `Bearer ${session?.access_token}` }
+    });
+    const result = await res.json();
+    if (res.ok) setData(result);
+    else setMsg(result.error);
+  }
+
+  useEffect(() => {
+    load();
+  }, [id]);
+
+  async function toggleStatus() {
+    const newStatus = data.user.status === "active" ? "suspended" : "active";
+    if (!confirm(newStatus === "suspended" ? "تعليق حساب هذا المستخدم؟" : "إعادة تفعيل هذا الحساب؟")) return;
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const result = await res.json();
+    if (!res.ok) setMsg(result.error);
+    else load();
+  }
+
+  async function sendNotification(e) {
+    e.preventDefault();
+    setNotifStatus(null);
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/users/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ user_id: id, title: notifTitle, message: notifMsg })
+    });
+    const result = await res.json();
+    if (!res.ok) setNotifStatus({ type: "error", text: result.error });
+    else {
+      setNotifStatus({ type: "success", text: "تم إرسال الإشعار." });
+      setNotifTitle("");
+      setNotifMsg("");
+    }
+  }
+
+  if (msg) return <p className="text-red-600">{msg}</p>;
+  if (!data) return <p className="text-gray-500">...جارِ التحميل</p>;
+
+  const { user, tickets, transactions, winners } = data;
+
+  return (
+    <AdminGuard>
+      <div className="space-y-6">
+        <div className="card flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold">
+              {user.first_name || "—"} {user.last_name || ""}
+            </h1>
+            <p className="text-gray-500 text-sm">{user.phone || "بدون رقم هاتف"}</p>
+            <p className="text-gray-500 text-sm">المحافظة: {user.province || "—"}</p>
+            <p className="font-bold text-brand-600 mt-1">الرصيد: ${user.balance}</p>
+            <p className="text-sm mt-1">
+              الحالة:{" "}
+              <span className={user.status === "active" ? "text-green-600" : "text-red-600"}>
+                {user.status === "active" ? "نشط" : "معلّق"}
+              </span>
+            </p>
+          </div>
+          <button
+            onClick={toggleStatus}
+            className={`py-2 px-4 rounded-lg border ${
+              user.status === "active" ? "border-red-300 text-red-600" : "border-green-300 text-green-600"
+            }`}
+          >
+            {user.status === "active" ? "تعليق الحساب" : "إعادة تفعيل الحساب"}
+          </button>
+        </div>
+
+        <form onSubmit={sendNotification} className="card space-y-2">
+          <h2 className="font-bold">إرسال إشعار</h2>
+          <input
+            placeholder="عنوان الإشعار"
+            className="w-full border rounded-lg p-2"
+            value={notifTitle}
+            onChange={(e) => setNotifTitle(e.target.value)}
+            required
+          />
+          <textarea
+            placeholder="نص الإشعار"
+            className="w-full border rounded-lg p-2"
+            value={notifMsg}
+            onChange={(e) => setNotifMsg(e.target.value)}
+            required
+          />
+          <button className="btn-primary">إرسال</button>
+          {notifStatus && (
+            <p className={notifStatus.type === "error" ? "text-red-600 text-sm" : "text-green-600 text-sm"}>
+              {notifStatus.text}
+            </p>
+          )}
+        </form>
+
+        <div>
+          <h2 className="font-bold mb-2">الجوائز</h2>
+          <div className="space-y-2">
+            {winners.map((w) => (
+              <div key={w.id} className="card text-sm">
+                <p className="font-bold">{w.draws?.products?.name}</p>
+                <p>{w.prize_type === "product" ? "المنتج" : `$${w.prize_amount}`} — {w.status}</p>
+              </div>
+            ))}
+            {winners.length === 0 && <p className="text-gray-500 text-sm">لا توجد جوائز.</p>}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="font-bold mb-2">التذاكر</h2>
+          <div className="space-y-2">
+            {tickets.map((t) => (
+              <div key={t.id} className="card flex justify-between text-sm">
+                <p>{t.draws?.products?.name} — #{t.ticket_number}</p>
+                <p className="text-gray-400">{new Date(t.created_at).toLocaleDateString("ar")}</p>
+              </div>
+            ))}
+            {tickets.length === 0 && <p className="text-gray-500 text-sm">لا توجد تذاكر.</p>}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="font-bold mb-2">سجل المعاملات</h2>
+          <div className="space-y-2">
+            {transactions.map((t) => (
+              <div key={t.id} className="card flex justify-between text-sm">
+                <div>
+                  <p className="font-bold">{t.description}</p>
+                  <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+                </div>
+                <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                  {t.amount >= 0 ? "+" : ""}
+                  {t.amount}$
+                </p>
+              </div>
+            ))}
+            {transactions.length === 0 && <p className="text-gray-500 text-sm">لا توجد معاملات.</p>}
+          </div>
+        </div>
+      </div>
+    </AdminGuard>
+  );
+}
