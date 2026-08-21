@@ -29,6 +29,17 @@ export default function AuthPage() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return setMsg(error.message);
+
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      if (session) {
+        fetch("/api/log-login", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).catch(() => {});
+      }
+
       router.push("/");
     }
   }
