@@ -25,31 +25,50 @@ export async function GET(request, { params }) {
 
   const { id } = params;
 
-  const [{ data: user, error: userErr }, { data: tickets }, { data: transactions }, { data: winners }] =
-    await Promise.all([
-      supabaseAdmin.from("users").select("*").eq("id", id).single(),
-      supabaseAdmin
-        .from("tickets")
-        .select("id, ticket_number, price, created_at, draws(status, products(name))")
-        .eq("user_id", id)
-        .order("created_at", { ascending: false })
-        .limit(50),
-      supabaseAdmin
-        .from("transactions")
-        .select("*")
-        .eq("user_id", id)
-        .order("created_at", { ascending: false })
-        .limit(50),
-      supabaseAdmin
-        .from("winners")
-        .select("id, prize_type, prize_amount, status, created_at, draws(products(name))")
-        .eq("user_id", id)
-        .order("created_at", { ascending: false })
-    ]);
+  const [
+    { data: user, error: userErr },
+    { data: authUserData },
+    { data: tickets },
+    { data: transactions },
+    { data: winners }
+  ] = await Promise.all([
+    supabaseAdmin.from("users").select("*").eq("id", id).single(),
+    supabaseAdmin.auth.admin.getUserById(id),
+    supabaseAdmin
+      .from("tickets")
+      .select("id, ticket_number, price, created_at, draws(status, products(name))")
+      .eq("user_id", id)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabaseAdmin
+      .from("transactions")
+      .select("*")
+      .eq("user_id", id)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabaseAdmin
+      .from("winners")
+      .select("id, prize_type, prize_amount, status, created_at, draws(products(name))")
+      .eq("user_id", id)
+      .order("created_at", { ascending: false })
+  ]);
 
   if (userErr) return NextResponse.json({ error: userErr.message }, { status: 404 });
 
-  return NextResponse.json({ user, tickets: tickets ?? [], transactions: transactions ?? [], winners: winners ?? [] });
+  const authUser = authUserData?.user;
+
+  return NextResponse.json({
+    user: {
+      ...user,
+      email: authUser?.email || null,
+      email_confirmed_at: authUser?.email_confirmed_at || null,
+      last_sign_in_at: authUser?.last_sign_in_at || null,
+      auth_created_at: authUser?.created_at || null
+    },
+    tickets: tickets ?? [],
+    transactions: transactions ?? [],
+    winners: winners ?? []
+  });
 }
 
 export async function PUT(request, { params }) {
