@@ -19,6 +19,8 @@ export default function WalletPage() {
   const [wAddress, setWAddress] = useState("");
   const [wMsg, setWMsg] = useState(null);
   const [wLoading, setWLoading] = useState(false);
+  const [myWithdrawals, setMyWithdrawals] = useState([]);
+  const [cancelMsg, setCancelMsg] = useState(null);
 
   async function loadData() {
     const {
@@ -35,6 +37,14 @@ export default function WalletPage() {
       .order("created_at", { ascending: false })
       .limit(20);
     setTxns(transactions ?? []);
+
+    const { data: withdrawals } = await supabase
+      .from("withdrawals")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setMyWithdrawals(withdrawals ?? []);
   }
 
   useEffect(() => {
@@ -92,6 +102,30 @@ export default function WalletPage() {
       loadData();
     }
   }
+
+  async function cancelWithdrawal(withdrawal_id) {
+    setCancelMsg(null);
+    if (!confirm("إلغاء طلب السحب هذا وإعادة المبلغ إلى رصيدك؟")) return;
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    const res = await fetch("/api/withdraw/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ withdrawal_id })
+    });
+    const result = await res.json();
+
+    if (!res.ok) setCancelMsg({ type: "error", text: result.error });
+    else {
+      setCancelMsg({ type: "success", text: "تم إلغاء طلب السحب وإعادة المبلغ إلى رصيدك." });
+      loadData();
+    }
+  }
+
+  const statusAr = { pending: "قيد الانتظار", paid: "تم الدفع", rejected: "مرفوض", cancelled: "ملغى" };
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
@@ -168,6 +202,36 @@ export default function WalletPage() {
             <p className={`text-sm ${wMsg.type === "error" ? "text-red-600" : "text-brand-600"}`}>{wMsg.text}</p>
           )}
         </form>
+
+        {myWithdrawals.length > 0 && (
+          <div className="card mt-4">
+            <h2 className="font-bold mb-2">طلبات السحب الخاصة بي</h2>
+            {cancelMsg && (
+              <p className={`text-sm mb-2 ${cancelMsg.type === "error" ? "text-red-600" : "text-green-600"}`}>
+                {cancelMsg.text}
+              </p>
+            )}
+            <div className="space-y-2">
+              {myWithdrawals.map((w) => (
+                <div key={w.id} className="flex justify-between items-center text-sm border rounded-lg p-2">
+                  <div>
+                    <p className="font-bold">${w.amount}</p>
+                    <p className="text-gray-500">{statusAr[w.status]}</p>
+                    <p className="text-gray-400 text-xs">{new Date(w.created_at).toLocaleString("ar")}</p>
+                  </div>
+                  {w.status === "pending" && (
+                    <button
+                      onClick={() => cancelWithdrawal(w.id)}
+                      className="py-1 px-3 rounded-lg border border-red-300 text-red-600 text-xs"
+                    >
+                      إلغاء الطلب
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div>
