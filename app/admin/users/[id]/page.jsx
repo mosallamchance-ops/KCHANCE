@@ -73,24 +73,45 @@ export default function AdminUserDetailPage() {
   return (
     <AdminGuard>
       <div className="space-y-6">
-        <div className="card flex justify-between items-center">
-          <div>
+        <div className="card flex justify-between items-start">
+          <div className="space-y-1 text-sm">
             <h1 className="text-xl font-bold">
               {user.first_name || "—"} {user.last_name || ""}
             </h1>
-            <p className="text-gray-500 text-sm">{user.phone || "بدون رقم هاتف"}</p>
-            <p className="text-gray-500 text-sm">المحافظة: {user.province || "—"}</p>
-            <p className="font-bold text-brand-600 mt-1">الرصيد: ${user.balance}</p>
-            <p className="text-sm mt-1">
+            <p className="text-gray-500">📧 {user.email || "—"}</p>
+            <p className="text-gray-500">
+              ✉️ تأكيد البريد: {user.email_confirmed_at ? "مؤكد" : "غير مؤكد"}
+            </p>
+            <p className="text-gray-500">📱 الهاتف: {user.phone || "—"}</p>
+            <p className="text-gray-500">🎂 العمر: {user.age || "—"}</p>
+            <p className="text-gray-500">⚧ الجنس: {user.gender || "—"}</p>
+            <p className="text-gray-500">📍 المحافظة: {user.province || "—"}</p>
+            <p className="text-gray-500">💳 رقم المحفظة: {user.wallet_number || "—"}</p>
+            <p className="font-bold text-brand-600 text-base mt-1">الرصيد: ${user.balance}</p>
+            <p>
               الحالة:{" "}
               <span className={user.status === "active" ? "text-green-600" : "text-red-600"}>
                 {user.status === "active" ? "نشط" : "معلّق"}
               </span>
             </p>
+            <div className="pt-2 border-t mt-2 text-gray-400 text-xs space-y-1">
+              <p>
+                تاريخ إنشاء الحساب:{" "}
+                {user.auth_created_at ? new Date(user.auth_created_at).toLocaleString("ar") : "—"}
+              </p>
+              <p>
+                آخر تسجيل دخول:{" "}
+                {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString("ar") : "لم يسجل الدخول بعد"}
+              </p>
+              <p>
+                آخر تحديث للملف الشخصي:{" "}
+                {user.updated_at ? new Date(user.updated_at).toLocaleString("ar") : "—"}
+              </p>
+            </div>
           </div>
           <button
             onClick={toggleStatus}
-            className={`py-2 px-4 rounded-lg border ${
+            className={`py-2 px-4 rounded-lg border whitespace-nowrap ${
               user.status === "active" ? "border-red-300 text-red-600" : "border-green-300 text-green-600"
             }`}
           >
