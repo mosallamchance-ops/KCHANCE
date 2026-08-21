@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import AdminGuard from "@/components/AdminGuard";
 
 export default function AdminUserDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [msg, setMsg] = useState(null);
   const [notifTitle, setNotifTitle] = useState("");
@@ -86,6 +87,10 @@ export default function AdminUserDetailPage() {
     else if (ua.includes("Linux")) os = "Linux";
 
     return browser + " — " + os;
+  }
+
+  function goToUser(userId) {
+    router.push("/admin/users/" + userId);
   }
 
   return (
@@ -169,21 +174,23 @@ export default function AdminUserDetailPage() {
               هذه الحسابات سجّلت دخولاً من نفس عنوان IP و/أو نفس الجهاز — قد تكون حسابات متعددة لنفس الشخص.
             </p>
             <div className="space-y-2">
-              {relatedAccounts.map(function (a) {
+              {relatedAccounts.map(function (acc) {
                 return (
-                  
-                    key={a.id}
-                    href={"/admin/users/" + a.id}
-                    className="flex justify-between items-center text-sm border rounded-lg p-2 hover:bg-gray-50"
+                  <div
+                    key={acc.id}
+                    onClick={function () {
+                      goToUser(acc.id);
+                    }}
+                    className="flex justify-between items-center text-sm border rounded-lg p-2 hover:bg-gray-50 cursor-pointer"
                   >
                     <span>
-                      {a.first_name || "—"} {a.last_name || ""} — {a.phone || "بدون هاتف"}
+                      {acc.first_name || "—"} {acc.last_name || ""} — {acc.phone || "بدون هاتف"}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {a.sharedIp && "نفس IP "}
-                      {a.sharedAgent && "نفس الجهاز"}
+                      {acc.sharedIp && "نفس IP "}
+                      {acc.sharedAgent && "نفس الجهاز"}
                     </span>
-                  </a>
+                  </div>
                 );
               })}
             </div>
