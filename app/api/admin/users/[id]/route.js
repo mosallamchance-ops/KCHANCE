@@ -2,6 +2,28 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Direct REST call to Supabase's database API, always fresh, never cached —
+// same fix applied here as the deposits list route, since this route hit
+// the identical stale-data issue.
+async function restGet(path) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`
+    },
+    cache: "no-store"
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+  return res.json();
+}
 
 async function requireAdmin(request) {
   const authHeader = request.headers.get("authorization") || "";
@@ -25,95 +47,75 @@ export async function GET(request, { params }) {
 
   const { id } = params;
 
-  const [
-    { data: user, error: userErr },
-    { data: authUserData },
-    { data: tickets },
-    { data: transactions },
-    { data: winners },
-    { data: loginEvents }
-  ] = await Promise.all([
-    supabaseAdmin.from("users").select("*").eq("id", id).single(),
-    supabaseAdmin.auth.admin.getUserById(id),
-    supabaseAdmin
-      .from("tickets")
-      .select("id, ticket_number, price, created_at, draws(status, products(name))")
-      .eq("user_id", id)
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabaseAdmin
-      .from("transactions")
-      .select("*")
-      .eq("user_id", id)
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabaseAdmin
-      .from("winners")
-      .select("id, prize_type, prize_amount, status, created_at, draws(products(name))")
-      .eq("user_id", id)
-      .order("created_at", { ascending: false }),
-    supabaseAdmin
-      .from("login_events")
-      .select("ip_address, user_agent, created_at")
-      .eq("user_id", id)
-      .order("created_at", { ascending: false })
-      .limit(20)
-  ]);
+  try {
+    const [userRows, tickets, transactions, winners, loginEvents] = await Promise.all([
+      restGet(`users?select=*&id=eq.${id}`),
+      restGet(
+        `tickets?select=id,ticket_number,price,created_at,draws(status,products(name))&user_id=eq.${id}&order=created_at.desc&limit=50`
+      ),
+      restGet(`transactions?select=*&user_id=eq.${id}&order=created_at.desc&limit=50`),
+      restGet(
+        `winners?select=id,prize_type,prize_amount,status,created_at,draws(products(name))&user_id=eq.${id}&order=created_at.desc`
+      ),
+      restGet(`login_events?select=ip_address,user_agent,created_at&user_id=eq.${id}&order=created_at.desc&limit=20`)
+    ]);
 
-  if (userErr) return NextResponse.json({ error: userErr.message }, { status: 404 });
-
-  const authUser = authUserData?.user;
-
-  let relatedAccounts = [];
-  const ips = [...new Set((loginEvents ?? []).map((e) => e.ip_address).filter(Boolean))];
-  const agents = [...new Set((loginEvents ?? []).map((e) => e.user_agent).filter(Boolean))];
-
-  if (ips.length > 0 || agents.length > 0) {
-    let matchQuery = supabaseAdmin
-      .from("login_events")
-      .select("user_id, ip_address, user_agent")
-      .neq("user_id", id);
-
-    if (ips.length > 0 && agents.length > 0) {
-      matchQuery = matchQuery.or(`ip_address.in.(${ips.join(",")}),user_agent.in.(${agents.map((a) => `"${a}"`).join(",")})`);
-    } else if (ips.length > 0) {
-      matchQuery = matchQuery.in("ip_address", ips);
-    } else {
-      matchQuery = matchQuery.in("user_agent", agents);
+    const user = userRows?.[0];
+    if (!user) {
+      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
     }
 
-    const { data: matches } = await matchQuery;
+    const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(id);
+    const authUser = authUserData?.user;
 
-    if (matches?.length) {
-      const matchedUserIds = [...new Set(matches.map((m) => m.user_id))];
-      const { data: matchedUsers } = await supabaseAdmin
-        .from("users")
-        .select("id, first_name, last_name, phone")
-        .in("id", matchedUserIds);
+    let relatedAccounts = [];
+    const ips = [...new Set((loginEvents ?? []).map((e) => e.ip_address).filter(Boolean))];
+    const agents = [...new Set((loginEvents ?? []).map((e) => e.user_agent).filter(Boolean))];
 
-      relatedAccounts = (matchedUsers ?? []).map((u) => {
-        const userMatches = matches.filter((m) => m.user_id === u.id);
-        const sharedIp = userMatches.some((m) => ips.includes(m.ip_address));
-        const sharedAgent = userMatches.some((m) => agents.includes(m.user_agent));
-        return { ...u, sharedIp, sharedAgent };
-      });
+    if (ips.length > 0 || agents.length > 0) {
+      const ipFilter = ips.length > 0 ? `ip_address.in.(${ips.join(",")})` : null;
+      const agentFilter = agents.length > 0 ? `user_agent.in.(${agents.map((a) => `"${a}"`).join(",")})` : null;
+      const orFilter = [ipFilter, agentFilter].filter(Boolean).join(",");
+
+      const matches = await restGet(
+        `login_events?select=user_id,ip_address,user_agent&user_id=neq.${id}&or=(${orFilter})`
+      );
+
+      if (matches?.length) {
+        const matchedUserIds = [...new Set(matches.map((m) => m.user_id))];
+        const matchedUsers = await restGet(
+          `users?select=id,first_name,last_name,phone&id=in.(${matchedUserIds.join(",")})`
+        );
+
+        relatedAccounts = (matchedUsers ?? []).map((u) => {
+          const userMatches = matches.filter((m) => m.user_id === u.id);
+          const sharedIp = userMatches.some((m) => ips.includes(m.ip_address));
+          const sharedAgent = userMatches.some((m) => agents.includes(m.user_agent));
+          return { ...u, sharedIp, sharedAgent };
+        });
+      }
     }
+
+    return NextResponse.json(
+      {
+        user: {
+          ...user,
+          email: authUser?.email || null,
+          email_confirmed_at: authUser?.email_confirmed_at || null,
+          last_sign_in_at: authUser?.last_sign_in_at || null,
+          auth_created_at: authUser?.created_at || null
+        },
+        tickets: tickets ?? [],
+        transactions: transactions ?? [],
+        winners: winners ?? [],
+        loginEvents: loginEvents ?? [],
+        relatedAccounts
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
-
-  return NextResponse.json({
-    user: {
-      ...user,
-      email: authUser?.email || null,
-      email_confirmed_at: authUser?.email_confirmed_at || null,
-      last_sign_in_at: authUser?.last_sign_in_at || null,
-      auth_created_at: authUser?.created_at || null
-    },
-    tickets: tickets ?? [],
-    transactions: transactions ?? [],
-    winners: winners ?? [],
-    loginEvents: loginEvents ?? [],
-    relatedAccounts
-  });
 }
 
 export async function PUT(request, { params }) {
