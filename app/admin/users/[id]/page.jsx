@@ -68,7 +68,25 @@ export default function AdminUserDetailPage() {
   if (msg) return <p className="text-red-600">{msg}</p>;
   if (!data) return <p className="text-gray-500">...جارِ التحميل</p>;
 
-  const { user, tickets, transactions, winners } = data;
+  const { user, tickets, transactions, winners, loginEvents, relatedAccounts } = data;
+
+  function parseDevice(ua) {
+    if (!ua) return "غير معروف";
+    let browser = "متصفح غير معروف";
+    if (ua.includes("Edg/")) browser = "Edge";
+    else if (ua.includes("Chrome/") && !ua.includes("Chromium")) browser = "Chrome";
+    else if (ua.includes("Firefox/")) browser = "Firefox";
+    else if (ua.includes("Safari/") && !ua.includes("Chrome")) browser = "Safari";
+
+    let os = "نظام غير معروف";
+    if (ua.includes("Windows")) os = "Windows";
+    else if (ua.includes("Mac OS")) os = "macOS";
+    else if (ua.includes("Android")) os = "Android";
+    else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+    else if (ua.includes("Linux")) os = "Linux";
+
+    return `${browser} — ${os}`;
+  }
 
   return (
     <AdminGuard>
@@ -142,6 +160,50 @@ export default function AdminUserDetailPage() {
             </p>
           )}
         </form>
+
+        {relatedAccounts.length > 0 && (
+          <div className="card border-2 border-red-300">
+            <h2 className="font-bold text-red-600 mb-2">⚠️ حسابات محتملة الارتباط</h2>
+            <p className="text-xs text-gray-500 mb-2">
+              هذه الحسابات سجّلت دخولاً من نفس عنوان IP و/أو نفس الجهاز — قد تكون حسابات متعددة لنفس الشخص.
+            </p>
+            <div className="space-y-2">
+              {relatedAccounts.map((a) => (
+                
+                  key={a.id}
+                  href={`/admin/users/${a.id}`}
+                  className="flex justify-between items-center text-sm border rounded-lg p-2 hover:bg-gray-50"
+                >
+                  <span>
+                    {a.first_name || "—"} {a.last_name || ""} — {a.phone || "بدون هاتف"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {a.sharedIp && "نفس IP "}
+                    {a.sharedAgent && "نفس الجهاز"}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <h2 className="font-bold mb-2">سجل تسجيل الدخول</h2>
+          <div className="space-y-2">
+            {loginEvents.map((e, i) => (
+              <div key={i} className="card flex justify-between text-sm">
+                <div>
+                  <p className="font-bold">{parseDevice(e.user_agent)}</p>
+                  <p className="text-gray-500">IP: {e.ip_address || "غير معروف"}</p>
+                </div>
+                <p className="text-gray-400">{new Date(e.created_at).toLocaleString("ar")}</p>
+              </div>
+            ))}
+            {loginEvents.length === 0 && (
+              <p className="text-gray-500 text-sm">لا يوجد سجل دخول مسجّل بعد (يبدأ التسجيل من هذا التحديث فصاعداً).</p>
+            )}
+          </div>
+        </div>
 
         <div>
           <h2 className="font-bold mb-2">الجوائز</h2>
