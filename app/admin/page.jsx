@@ -51,6 +51,9 @@ export default function AdminDashboardPage() {
             <Link href="/admin/deposits" className="py-2 px-4 rounded-lg border">
               طلبات الشحن
             </Link>
+            <Link href="/admin/withdrawals" className="py-2 px-4 rounded-lg border">
+              طلبات السحب
+            </Link>
             <Link href="/admin/winners" className="py-2 px-4 rounded-lg border">
               الفائزون والجوائز
             </Link>
