@@ -85,7 +85,7 @@ export default function AdminUserDetailPage() {
     else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
     else if (ua.includes("Linux")) os = "Linux";
 
-    return `${browser} — ${os}`;
+    return browser + " — " + os;
   }
 
   return (
@@ -129,9 +129,10 @@ export default function AdminUserDetailPage() {
           </div>
           <button
             onClick={toggleStatus}
-            className={`py-2 px-4 rounded-lg border whitespace-nowrap ${
-              user.status === "active" ? "border-red-300 text-red-600" : "border-green-300 text-green-600"
-            }`}
+            className={
+              "py-2 px-4 rounded-lg border whitespace-nowrap " +
+              (user.status === "active" ? "border-red-300 text-red-600" : "border-green-300 text-green-600")
+            }
           >
             {user.status === "active" ? "تعليق الحساب" : "إعادة تفعيل الحساب"}
           </button>
@@ -168,21 +169,23 @@ export default function AdminUserDetailPage() {
               هذه الحسابات سجّلت دخولاً من نفس عنوان IP و/أو نفس الجهاز — قد تكون حسابات متعددة لنفس الشخص.
             </p>
             <div className="space-y-2">
-              {relatedAccounts.map((a) => (
-                
-                  key={a.id}
-                  href={`/admin/users/${a.id}`}
-                  className="flex justify-between items-center text-sm border rounded-lg p-2 hover:bg-gray-50"
-                >
-                  <span>
-                    {a.first_name || "—"} {a.last_name || ""} — {a.phone || "بدون هاتف"}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {a.sharedIp && "نفس IP "}
-                    {a.sharedAgent && "نفس الجهاز"}
-                  </span>
-                </a>
-              ))}
+              {relatedAccounts.map(function (a) {
+                return (
+                  
+                    key={a.id}
+                    href={"/admin/users/" + a.id}
+                    className="flex justify-between items-center text-sm border rounded-lg p-2 hover:bg-gray-50"
+                  >
+                    <span>
+                      {a.first_name || "—"} {a.last_name || ""} — {a.phone || "بدون هاتف"}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {a.sharedIp && "نفس IP "}
+                      {a.sharedAgent && "نفس الجهاز"}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           </div>
         )}
@@ -190,15 +193,17 @@ export default function AdminUserDetailPage() {
         <div>
           <h2 className="font-bold mb-2">سجل تسجيل الدخول</h2>
           <div className="space-y-2">
-            {loginEvents.map((e, i) => (
-              <div key={i} className="card flex justify-between text-sm">
-                <div>
-                  <p className="font-bold">{parseDevice(e.user_agent)}</p>
-                  <p className="text-gray-500">IP: {e.ip_address || "غير معروف"}</p>
+            {loginEvents.map(function (e, i) {
+              return (
+                <div key={i} className="card flex justify-between text-sm">
+                  <div>
+                    <p className="font-bold">{parseDevice(e.user_agent)}</p>
+                    <p className="text-gray-500">IP: {e.ip_address || "غير معروف"}</p>
+                  </div>
+                  <p className="text-gray-400">{new Date(e.created_at).toLocaleString("ar")}</p>
                 </div>
-                <p className="text-gray-400">{new Date(e.created_at).toLocaleString("ar")}</p>
-              </div>
-            ))}
+              );
+            })}
             {loginEvents.length === 0 && (
               <p className="text-gray-500 text-sm">لا يوجد سجل دخول مسجّل بعد (يبدأ التسجيل من هذا التحديث فصاعداً).</p>
             )}
@@ -208,12 +213,16 @@ export default function AdminUserDetailPage() {
         <div>
           <h2 className="font-bold mb-2">الجوائز</h2>
           <div className="space-y-2">
-            {winners.map((w) => (
-              <div key={w.id} className="card text-sm">
-                <p className="font-bold">{w.draws?.products?.name}</p>
-                <p>{w.prize_type === "product" ? "المنتج" : `$${w.prize_amount}`} — {w.status}</p>
-              </div>
-            ))}
+            {winners.map(function (w) {
+              return (
+                <div key={w.id} className="card text-sm">
+                  <p className="font-bold">{w.draws?.products?.name}</p>
+                  <p>
+                    {w.prize_type === "product" ? "المنتج" : "$" + w.prize_amount} — {w.status}
+                  </p>
+                </div>
+              );
+            })}
             {winners.length === 0 && <p className="text-gray-500 text-sm">لا توجد جوائز.</p>}
           </div>
         </div>
@@ -221,12 +230,16 @@ export default function AdminUserDetailPage() {
         <div>
           <h2 className="font-bold mb-2">التذاكر</h2>
           <div className="space-y-2">
-            {tickets.map((t) => (
-              <div key={t.id} className="card flex justify-between text-sm">
-                <p>{t.draws?.products?.name} — #{t.ticket_number}</p>
-                <p className="text-gray-400">{new Date(t.created_at).toLocaleDateString("ar")}</p>
-              </div>
-            ))}
+            {tickets.map(function (t) {
+              return (
+                <div key={t.id} className="card flex justify-between text-sm">
+                  <p>
+                    {t.draws?.products?.name} — #{t.ticket_number}
+                  </p>
+                  <p className="text-gray-400">{new Date(t.created_at).toLocaleDateString("ar")}</p>
+                </div>
+              );
+            })}
             {tickets.length === 0 && <p className="text-gray-500 text-sm">لا توجد تذاكر.</p>}
           </div>
         </div>
@@ -234,18 +247,20 @@ export default function AdminUserDetailPage() {
         <div>
           <h2 className="font-bold mb-2">سجل المعاملات</h2>
           <div className="space-y-2">
-            {transactions.map((t) => (
-              <div key={t.id} className="card flex justify-between text-sm">
-                <div>
-                  <p className="font-bold">{t.description}</p>
-                  <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+            {transactions.map(function (t) {
+              return (
+                <div key={t.id} className="card flex justify-between text-sm">
+                  <div>
+                    <p className="font-bold">{t.description}</p>
+                    <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+                  </div>
+                  <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                    {t.amount >= 0 ? "+" : ""}
+                    {t.amount}$
+                  </p>
                 </div>
-                <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                  {t.amount >= 0 ? "+" : ""}
-                  {t.amount}$
-                </p>
-              </div>
-            ))}
+              );
+            })}
             {transactions.length === 0 && <p className="text-gray-500 text-sm">لا توجد معاملات.</p>}
           </div>
         </div>
