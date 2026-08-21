@@ -54,6 +54,9 @@ export default function AdminDashboardPage() {
             <Link href="/admin/withdrawals" className="py-2 px-4 rounded-lg border">
               طلبات السحب
             </Link>
+            <Link href="/admin/users" className="py-2 px-4 rounded-lg border">
+              المستخدمون
+            </Link>
             <Link href="/admin/winners" className="py-2 px-4 rounded-lg border">
               الفائزون والجوائز
             </Link>
