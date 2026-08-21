@@ -30,7 +30,8 @@ export async function GET(request, { params }) {
     { data: authUserData },
     { data: tickets },
     { data: transactions },
-    { data: winners }
+    { data: winners },
+    { data: loginEvents }
   ] = await Promise.all([
     supabaseAdmin.from("users").select("*").eq("id", id).single(),
     supabaseAdmin.auth.admin.getUserById(id),
@@ -50,12 +51,54 @@ export async function GET(request, { params }) {
       .from("winners")
       .select("id, prize_type, prize_amount, status, created_at, draws(products(name))")
       .eq("user_id", id)
+      .order("created_at", { ascending: false }),
+    supabaseAdmin
+      .from("login_events")
+      .select("ip_address, user_agent, created_at")
+      .eq("user_id", id)
       .order("created_at", { ascending: false })
+      .limit(20)
   ]);
 
   if (userErr) return NextResponse.json({ error: userErr.message }, { status: 404 });
 
   const authUser = authUserData?.user;
+
+  let relatedAccounts = [];
+  const ips = [...new Set((loginEvents ?? []).map((e) => e.ip_address).filter(Boolean))];
+  const agents = [...new Set((loginEvents ?? []).map((e) => e.user_agent).filter(Boolean))];
+
+  if (ips.length > 0 || agents.length > 0) {
+    let matchQuery = supabaseAdmin
+      .from("login_events")
+      .select("user_id, ip_address, user_agent")
+      .neq("user_id", id);
+
+    if (ips.length > 0 && agents.length > 0) {
+      matchQuery = matchQuery.or(`ip_address.in.(${ips.join(",")}),user_agent.in.(${agents.map((a) => `"${a}"`).join(",")})`);
+    } else if (ips.length > 0) {
+      matchQuery = matchQuery.in("ip_address", ips);
+    } else {
+      matchQuery = matchQuery.in("user_agent", agents);
+    }
+
+    const { data: matches } = await matchQuery;
+
+    if (matches?.length) {
+      const matchedUserIds = [...new Set(matches.map((m) => m.user_id))];
+      const { data: matchedUsers } = await supabaseAdmin
+        .from("users")
+        .select("id, first_name, last_name, phone")
+        .in("id", matchedUserIds);
+
+      relatedAccounts = (matchedUsers ?? []).map((u) => {
+        const userMatches = matches.filter((m) => m.user_id === u.id);
+        const sharedIp = userMatches.some((m) => ips.includes(m.ip_address));
+        const sharedAgent = userMatches.some((m) => agents.includes(m.user_agent));
+        return { ...u, sharedIp, sharedAgent };
+      });
+    }
+  }
 
   return NextResponse.json({
     user: {
@@ -67,7 +110,9 @@ export async function GET(request, { params }) {
     },
     tickets: tickets ?? [],
     transactions: transactions ?? [],
-    winners: winners ?? []
+    winners: winners ?? [],
+    loginEvents: loginEvents ?? [],
+    relatedAccounts
   });
 }
 
