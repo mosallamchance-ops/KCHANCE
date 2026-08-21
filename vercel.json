@@ -1,1 +1,8 @@
-{ "crons": [ { "path": "/api/cron/process-draws", "schedule": "0 0 * * *" } ] }
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-draws",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
