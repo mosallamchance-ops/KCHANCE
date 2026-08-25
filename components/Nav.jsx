@@ -128,6 +128,7 @@ export default function Nav() {
               <a href="/wallet" className={linkClass} onClick={() => setMobileOpen(false)}>
                 رصيدي
               </a>
+              <a href="/support" className={linkClass}>الدعم</a>
               {isAdmin && (
                 
                   href="/admin"
