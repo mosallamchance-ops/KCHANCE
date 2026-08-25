@@ -5,12 +5,16 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: "#f3f0ff",
-          100: "#e5deff",
-          500: "#6f4bf2",
-          600: "#5a36e0",
-          700: "#4527b8"
+          50: "#eaf4ef",
+          100: "#cfe6da",
+          500: "#0e6b4a",
+          600: "#0a4f37",
+          700: "#083f2c"
         }
+      },
+      fontFamily: {
+        display: ["Lalezar", "Tajawal", "sans-serif"],
+        body: ["Tajawal", "Tahoma", "sans-serif"]
       }
     }
   },
