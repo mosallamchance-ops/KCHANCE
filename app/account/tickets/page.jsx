@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function MyTicketsPage() {
   const [tickets, setTickets] = useState([]);
-
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -26,28 +25,31 @@ export default function MyTicketsPage() {
     load();
   }, []);
 
-  function statusLabel(t) {
+  function statusInfo(t) {
     const draw = t.draws;
-    if (!draw) return "";
-    if (draw.status !== "completed") return "بانتظار السحب";
-    if (draw.winner_user_id === userId) return "🎉 فائز";
-    return "لست الفائز";
+    if (!draw) return { text: "—", color: "text-gray-400" };
+    if (draw.status !== "completed") return { text: "بانتظار السحب", color: "text-[var(--gold-deep)]" };
+    if (draw.winner_user_id === userId) return { text: "🎉 فائز", color: "text-[var(--emerald)] font-bold" };
+    return { text: "لست الفائز", color: "text-gray-400" };
   }
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">تذاكري</h1>
+      <h1 className="font-display text-2xl mb-4">تذاكري</h1>
       <div className="space-y-2">
-        {tickets.map((t) => (
-          <div key={t.id} className="card flex justify-between text-sm">
-            <div>
-              <p className="font-bold">{t.draws?.products?.name}</p>
-              <p className="text-gray-400">Ticket #{t.ticket_number}</p>
-              <p className="text-gray-400">{new Date(t.created_at).toLocaleDateString("ar")}</p>
+        {tickets.map(function (t) {
+          const info = statusInfo(t);
+          return (
+            <div key={t.id} className="card flex justify-between items-center text-sm">
+              <div>
+                <p className="font-bold">{t.draws?.products?.name}</p>
+                <p className="text-gray-400 font-mono-num">#{t.ticket_number}</p>
+                <p className="text-gray-400">{new Date(t.created_at).toLocaleDateString("ar")}</p>
+              </div>
+              <p className={info.color}>{info.text}</p>
             </div>
-            <p className="font-bold">{statusLabel(t)}</p>
-          </div>
-        ))}
+          );
+        })}
         {tickets.length === 0 && <p className="text-gray-500">لم تشترِ أي تذاكر بعد.</p>}
       </div>
     </div>
