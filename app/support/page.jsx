@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import FileUpload from "@/components/FileUpload";
 
 const statusAr = { open: "مفتوحة", in_progress: "قيد المعالجة", closed: "مغلقة" };
 
@@ -9,6 +10,8 @@ export default function SupportPage() {
   const [tickets, setTickets] = useState([]);
   const [subject, setSubject] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
+  const [attachment, setAttachment] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,6 +20,7 @@ export default function SupportPage() {
       data: { user }
     } = await supabase.auth.getUser();
     if (!user) return;
+    setUserId(user.id);
 
     const { data } = await supabase
       .from("support_tickets")
@@ -54,12 +58,14 @@ export default function SupportPage() {
       ticket_id: ticket.id,
       sender_type: "user",
       sender_id: user.id,
-      message: firstMessage
+      message: firstMessage,
+      attachment_url: attachment
     });
 
     setLoading(false);
     setSubject("");
     setFirstMessage("");
+    setAttachment(null);
     load();
   }
 
@@ -73,16 +79,28 @@ export default function SupportPage() {
           placeholder="عنوان المشكلة"
           className="w-full border rounded-lg p-2"
           value={subject}
-          onChange={(e) => setSubject(e.target.value)}
+          onChange={function (e) {
+            setSubject(e.target.value);
+          }}
           required
         />
         <textarea
           placeholder="اشرح المشكلة بالتفصيل"
           className="w-full border rounded-lg p-2"
           value={firstMessage}
-          onChange={(e) => setFirstMessage(e.target.value)}
+          onChange={function (e) {
+            setFirstMessage(e.target.value);
+          }}
           required
         />
+        {userId && (
+          <FileUpload
+            bucket="support-attachments"
+            pathPrefix={userId}
+            label="إرفاق صورة (اختياري)"
+            onUploaded={setAttachment}
+          />
+        )}
         <button disabled={loading} className="btn-primary w-full">
           {loading ? "...جارِ الإرسال" : "فتح تذكرة"}
         </button>
@@ -92,25 +110,27 @@ export default function SupportPage() {
       <div>
         <h2 className="font-bold mb-2">تذاكري</h2>
         <div className="space-y-2">
-          {tickets.map((t) => (
-            <Link key={t.id} href={`/support/${t.id}`} className="card flex justify-between items-center text-sm block">
-              <div>
-                <p className="font-bold">{t.subject}</p>
-                <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
-              </div>
-              <span
-                className={
-                  t.status === "open"
-                    ? "text-[var(--gold-deep)]"
-                    : t.status === "closed"
-                    ? "text-gray-400"
-                    : "text-[var(--emerald)]"
-                }
-              >
-                {statusAr[t.status]}
-              </span>
-            </Link>
-          ))}
+          {tickets.map(function (t) {
+            return (
+              <Link key={t.id} href={"/support/" + t.id} className="card flex justify-between items-center text-sm block">
+                <div>
+                  <p className="font-bold">{t.subject}</p>
+                  <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+                </div>
+                <span
+                  className={
+                    t.status === "open"
+                      ? "text-[var(--gold-deep)]"
+                      : t.status === "closed"
+                      ? "text-gray-400"
+                      : "text-[var(--emerald)]"
+                  }
+                >
+                  {statusAr[t.status]}
+                </span>
+              </Link>
+            );
+          })}
           {tickets.length === 0 && <p className="text-gray-500 text-sm">لا توجد تذاكر دعم بعد.</p>}
         </div>
       </div>
