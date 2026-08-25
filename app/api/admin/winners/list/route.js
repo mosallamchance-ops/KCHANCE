@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function GET(request) {
   const authHeader = request.headers.get("authorization") || "";
@@ -20,12 +25,25 @@ export async function GET(request) {
     return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
   }
 
-  const { data, error } = await supabaseAdmin
-    .from("winners")
-    .select("id, prize_type, prize_amount, status, created_at, users(first_name, last_name, phone), draws(products(name))")
-    .order("created_at", { ascending: false });
+  // Direct REST call to Supabase's database API, always fresh, never cached —
+  // same fix applied to every other admin read route.
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/winners?select=id,prize_type,prize_amount,status,created_at,users(first_name,last_name,phone),draws(products(name))&order=created_at.desc`,
+    {
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`
+      },
+      cache: "no-store"
+    }
+  );
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!res.ok) {
+    const errText = await res.text();
+    return NextResponse.json({ error: errText }, { status: 500 });
+  }
 
-  return NextResponse.json({ winners: data });
+  const data = await res.json();
+
+  return NextResponse.json({ winners: data }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
