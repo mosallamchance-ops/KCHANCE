@@ -55,14 +55,15 @@ export async function POST(request, { params }) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
-  const { message, status } = await request.json();
+  const { message, attachment_url, status } = await request.json();
 
   if (message) {
     const { error: msgErr } = await supabaseAdmin.from("support_messages").insert({
       ticket_id: params.id,
       sender_type: "admin",
       sender_id: admin.id,
-      message
+      message,
+      attachment_url: attachment_url || null
     });
     if (msgErr) return NextResponse.json({ error: msgErr.message }, { status: 400 });
 
