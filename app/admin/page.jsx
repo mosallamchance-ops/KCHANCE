@@ -23,7 +23,8 @@ const actionLinks = [
   { href: "/admin/deposits", label: "طلبات الشحن" },
   { href: "/admin/users", label: "المستخدمون" },
   { href: "/admin/admins", label: "المشرفون" },
-  { href: "/admin/winners", label: "الفائزون والجوائز" }
+  { href: "/admin/winners", label: "الفائزون والجوائز" },
+  { href: "/admin/support", label: "تذاكر الدعم" },
 ];
 
 export default function AdminDashboardPage() {
