@@ -3,9 +3,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const provinces = [
-  "دمشق", "ريف دمشق", "حلب", "حمص", "حماة", "اللاذقية", "طرطوس",
-  "إدلب", "درعا", "السويداء", "القنيطرة", "دير الزور", "الرقة",
-  "الحسكة", "القامشلي"
+  "دمشق",
+  "ريف دمشق",
+  "حلب",
+  "حمص",
+  "حماة",
+  "اللاذقية",
+  "طرطوس",
+  "إدلب",
+  "درعا",
+  "السويداء",
+  "القنيطرة",
+  "دير الزور",
+  "الرقة",
+  "الحسكة",
+  "القامشلي"
 ];
 
 export default function EditProfilePage() {
@@ -52,7 +64,9 @@ export default function EditProfilePage() {
   }, []);
 
   function update(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm(function (f) {
+      return Object.assign({}, f, { [field]: value });
+    });
   }
 
   async function handleSubmit(e) {
@@ -87,66 +101,83 @@ export default function EditProfilePage() {
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="text-xl font-bold mb-4">معلوماتي الشخصية</h1>
+      <h1 className="font-display text-2xl mb-4">معلوماتي الشخصية</h1>
 
-      <div className="mb-3 text-sm text-gray-500">
-        رقم الهاتف: {phone || "—"}{" "}
-        <span className="text-xs">(لتغيير رقم الهاتف الرجاء التواصل مع الدعم)</span>
+      <div className="mb-3 text-sm text-gray-500 bg-[var(--paper)] rounded-lg p-2">
+        رقم الهاتف: <span className="font-mono-num">{phone || "—"}</span>
+        <br />
+        <span className="text-xs">لتغيير رقم الهاتف الرجاء التواصل مع الدعم</span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           placeholder="الاسم"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.first_name}
-          onChange={(e) => update("first_name", e.target.value)}
+          onChange={function (e) {
+            update("first_name", e.target.value);
+          }}
         />
         <input
           placeholder="الكنية"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.last_name}
-          onChange={(e) => update("last_name", e.target.value)}
+          onChange={function (e) {
+            update("last_name", e.target.value);
+          }}
         />
         <input
           type="number"
           placeholder="العمر"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.age}
-          onChange={(e) => update("age", e.target.value)}
+          onChange={function (e) {
+            update("age", e.target.value);
+          }}
         />
         <select
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.gender}
-          onChange={(e) => update("gender", e.target.value)}
+          onChange={function (e) {
+            update("gender", e.target.value);
+          }}
         >
           <option value="">الجنس</option>
           <option value="male">ذكر</option>
           <option value="female">أنثى</option>
         </select>
         <select
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.province}
-          onChange={(e) => update("province", e.target.value)}
+          onChange={function (e) {
+            update("province", e.target.value);
+          }}
         >
           <option value="">المحافظة</option>
-          {provinces.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
+          {provinces.map(function (p) {
+            return (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            );
+          })}
         </select>
         <input
           placeholder="رقم المحفظة"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={form.wallet_number}
-          onChange={(e) => update("wallet_number", e.target.value)}
+          onChange={function (e) {
+            update("wallet_number", e.target.value);
+          }}
         />
         <button disabled={saving} className="btn-primary w-full">
           {saving ? "...جارِ الحفظ" : "حفظ المعلومات"}
         </button>
       </form>
       {msg && (
-        <p className={`text-sm mt-3 ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
+        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+          {msg.text}
+        </p>
       )}
     </div>
   );
