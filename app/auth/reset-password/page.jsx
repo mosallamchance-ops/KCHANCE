@@ -12,20 +12,19 @@ export default function ResetPasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Supabase reads the recovery token from the URL automatically and fires
-    // this event once the temporary "recovery" session is established.
-    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(function (event) {
       if (event === "PASSWORD_RECOVERY") {
         setReady(true);
       }
     });
 
-    // In case the event already fired before this component mounted.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
+    supabase.auth.getSession().then(function (result) {
+      if (result.data.session) setReady(true);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return function () {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function handleSubmit(e) {
@@ -40,23 +39,25 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({ password: password });
     setLoading(false);
 
     if (error) setMsg({ type: "error", text: error.message });
     else {
       setMsg({ type: "success", text: "تم تحديث كلمة المرور بنجاح! سيتم تحويلك الآن." });
-      setTimeout(() => router.push("/"), 1500);
+      setTimeout(function () {
+        router.push("/");
+      }, 1500);
     }
   }
 
   if (!ready) {
     return (
       <div className="max-w-sm mx-auto card">
-        <p className="text-gray-500">
-          ...جارِ التحقق من رابط إعادة التعيين. إذا لم يعمل هذا خلال لحظات، فقد يكون الرابط منتهي الصلاحية —
-          يرجى طلب رابط جديد من صفحة{" "}
-          <a href="/auth/forgot-password" className="text-brand-600 underline">
+        <p className="text-gray-500 text-sm">
+          ...جارِ التحقق من رابط إعادة التعيين. إذا لم يعمل هذا خلال لحظات، فقد يكون الرابط منتهي الصلاحية — يرجى طلب
+          رابط جديد من صفحة{" "}
+          <a href="/auth/forgot-password" className="text-[var(--emerald)] underline">
             نسيت كلمة المرور
           </a>
           .
@@ -67,22 +68,26 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="text-xl font-bold mb-4">إعادة تعيين كلمة المرور</h1>
+      <h1 className="font-display text-2xl mb-4">إعادة تعيين كلمة المرور</h1>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="password"
           placeholder="كلمة المرور الجديدة"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={function (e) {
+            setPassword(e.target.value);
+          }}
           required
         />
         <input
           type="password"
           placeholder="تأكيد كلمة المرور الجديدة"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={function (e) {
+            setConfirmPassword(e.target.value);
+          }}
           required
         />
         <button disabled={loading} className="btn-primary w-full">
@@ -90,7 +95,9 @@ export default function ResetPasswordPage() {
         </button>
       </form>
       {msg && (
-        <p className={`text-sm mt-3 ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
+        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+          {msg.text}
+        </p>
       )}
     </div>
   );
