@@ -12,7 +12,7 @@ export default function AdminDepositsPage() {
       data: { session }
     } = await supabase.auth.getSession();
     const res = await fetch("/api/admin/deposits/list", {
-      headers: { Authorization: `Bearer ${session?.access_token}` }
+      headers: { Authorization: "Bearer " + session?.access_token }
     });
     const result = await res.json();
     if (res.ok) setDeposits(result.deposits ?? []);
@@ -35,8 +35,8 @@ export default function AdminDepositsPage() {
     } = await supabase.auth.getSession();
     const res = await fetch("/api/admin/deposits", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ deposit_id, action })
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + session?.access_token },
+      body: JSON.stringify({ deposit_id: deposit_id, action: action })
     });
     const result = await res.json();
     if (!res.ok) setMsg(result.error);
@@ -46,38 +46,52 @@ export default function AdminDepositsPage() {
   return (
     <AdminGuard>
       <div>
-        <h1 className="text-xl font-bold mb-4">طلبات شحن الرصيد المعلقة</h1>
-        {msg && <p className="text-red-600 mb-2">{msg}</p>}
+        <h1 className="font-display text-2xl mb-4">طلبات شحن الرصيد المعلقة</h1>
+        {msg && <p className="text-[var(--ember)] mb-2">{msg}</p>}
         <div className="space-y-3">
-          {deposits.map((d) => (
-            <div key={d.id} className="card flex justify-between items-center">
-              <div className="text-sm">
-                <p className="font-bold">
-                  {d.users?.first_name} {d.users?.last_name} — {d.users?.phone}
-                </p>
-                <p>المبلغ: ${d.amount}</p>
-                <p>رقم العملية: {d.transaction_code}</p>
-                <p>المحفظة المرسلة: {d.sender_wallet}</p>
-                <p className="text-gray-400">{new Date(d.created_at).toLocaleString("ar")}</p>
-                {d.receipt_url && (
-                  <button className="text-brand-600 underline" onClick={() => viewReceipt(d.receipt_url)}>
-                    عرض الإيصال
+          {deposits.map(function (d) {
+            return (
+              <div key={d.id} className="card flex flex-wrap justify-between items-center gap-3">
+                <div className="text-sm">
+                  <p className="font-bold">
+                    {d.users?.first_name} {d.users?.last_name} — {d.users?.phone}
+                  </p>
+                  <p className="font-mono-num">المبلغ: ${d.amount}</p>
+                  <p>رقم العملية: {d.transaction_code}</p>
+                  <p>المحفظة المرسلة: {d.sender_wallet}</p>
+                  <p className="text-gray-400">{new Date(d.created_at).toLocaleString("ar")}</p>
+                  {d.receipt_url && (
+                    <button
+                      className="text-[var(--emerald)] underline"
+                      onClick={function () {
+                        viewReceipt(d.receipt_url);
+                      }}
+                    >
+                      عرض الإيصال
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className="btn-primary"
+                    onClick={function () {
+                      act(d.id, "approve");
+                    }}
+                  >
+                    قبول
                   </button>
-                )}
+                  <button
+                    className="py-2.5 px-4 rounded-xl border border-[var(--ember)] text-[var(--ember)] font-bold"
+                    onClick={function () {
+                      act(d.id, "reject");
+                    }}
+                  >
+                    رفض
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button className="btn-primary" onClick={() => act(d.id, "approve")}>
-                  قبول
-                </button>
-                <button
-                  className="py-2 px-4 rounded-lg border border-red-300 text-red-600"
-                  onClick={() => act(d.id, "reject")}
-                >
-                  رفض
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {deposits.length === 0 && <p className="text-gray-500">لا توجد طلبات معلقة.</p>}
         </div>
       </div>
