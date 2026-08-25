@@ -24,6 +24,7 @@ export async function GET(request) {
   if (!admin || admin.status !== "active") {
     return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
   }
+  
 
   // Direct REST call to Supabase's database API, always fresh, never cached —
   // same fix applied to every other admin read route.
