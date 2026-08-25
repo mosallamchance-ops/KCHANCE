@@ -9,6 +9,8 @@ export default function DrawDetailPage() {
   const [draw, setDraw] = useState(null);
   const [qty, setQty] = useState(1);
   const [balance, setBalance] = useState(0);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [checkedAuth, setCheckedAuth] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,15 +27,20 @@ export default function DrawDetailPage() {
       const {
         data: { user }
       } = await supabase.auth.getUser();
+
       if (user) {
+        setLoggedIn(true);
         const { data: profile } = await supabase.from("users").select("balance").eq("id", user.id).single();
         setBalance(profile?.balance ?? 0);
+      } else {
+        setLoggedIn(false);
       }
+      setCheckedAuth(true);
     }
     load();
   }, [id]);
 
-  if (!draw) return <p className="text-gray-500">...جارِ التحميل</p>;
+  if (!draw || !checkedAuth) return <p className="text-gray-500">...جارِ التحميل</p>;
 
   const remaining = draw.total_tickets - draw.sold_tickets;
   const max = Math.min(draw.max_tickets_per_user, remaining);
@@ -50,6 +57,7 @@ export default function DrawDetailPage() {
     if (!session) {
       setStatus({ type: "error", msg: "الرجاء تسجيل الدخول أولاً." });
       setLoading(false);
+      setConfirming(false);
       return;
     }
 
@@ -71,6 +79,8 @@ export default function DrawDetailPage() {
       });
     }
   }
+
+  const drawOpen = draw.status === "active" && remaining > 0;
 
   return (
     <div>
@@ -117,8 +127,24 @@ export default function DrawDetailPage() {
             </div>
           </div>
 
-          {draw.status !== "active" || remaining <= 0 ? (
+          {!drawOpen ? (
             <p className="mt-5 text-[var(--ember)] font-bold">هذا السحب غير متاح للشراء حالياً.</p>
+          ) : !loggedIn ? (
+            <div className="mt-5 bg-[var(--paper)] rounded-2xl p-5 text-center">
+              <p className="font-bold mb-1">سجّل الدخول لشراء تذاكر هذا السحب</p>
+              <p className="text-sm text-gray-500 mb-4">تحتاج إلى حساب لتتمكن من المشاركة في السحب.</p>
+              <div className="flex gap-2">
+                <a href="/auth" className="btn-primary flex-1 text-center">
+                  تسجيل الدخول
+                </a>
+                
+                  href="/auth"
+                  className="flex-1 text-center py-2.5 px-4 rounded-xl border border-[var(--line)] font-bold"
+                >
+                  إنشاء حساب جديد
+                </a>
+              </div>
+            </div>
           ) : (
             <div className="mt-5 bg-[var(--paper)] rounded-2xl p-4">
               <p className="font-bold mb-3 text-sm">اختر عدد التذاكر:</p>
@@ -169,7 +195,7 @@ export default function DrawDetailPage() {
         </div>
       </div>
 
-      {confirming && (
+      {confirming && loggedIn && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
           <div className="bg-[var(--card)] rounded-2xl p-6 max-w-sm w-full">
             <h3 className="font-display text-xl mb-3">تأكيد عملية الشراء</h3>
