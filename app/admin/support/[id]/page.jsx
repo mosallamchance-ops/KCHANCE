@@ -12,7 +12,6 @@ export default function AdminSupportThreadPage() {
   const { id } = useParams();
   const [ticket, setTicket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [signedUrls, setSignedUrls] = useState({});
   const [reply, setReply] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [sending, setSending] = useState(false);
@@ -28,16 +27,6 @@ export default function AdminSupportThreadPage() {
     if (res.ok) {
       setTicket(result.ticket);
       setMessages(result.messages);
-
-      const withAttachments = result.messages.filter(function (m) {
-        return m.attachment_url;
-      });
-      const urls = {};
-      for (const m of withAttachments) {
-        const { data } = await supabase.storage.from("support-attachments").createSignedUrl(m.attachment_url, 3600);
-        if (data) urls[m.id] = data.signedUrl;
-      }
-      setSignedUrls(urls);
     }
   }
 
@@ -117,14 +106,14 @@ export default function AdminSupportThreadPage() {
                 }
               >
                 <p>{m.message}</p>
-                {m.attachment_url && signedUrls[m.id] && (
+                {m.signedAttachmentUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={signedUrls[m.id]}
+                    src={m.signedAttachmentUrl}
                     alt=""
                     className="mt-2 rounded-lg max-h-48 cursor-pointer"
                     onClick={function () {
-                      window.open(signedUrls[m.id], "_blank");
+                      window.open(m.signedAttachmentUrl, "_blank");
                     }}
                   />
                 )}
