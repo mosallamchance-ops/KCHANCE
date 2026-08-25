@@ -42,8 +42,21 @@ export async function GET(request, { params }) {
 
     if (!tickets?.[0]) return NextResponse.json({ error: "التذكرة غير موجودة" }, { status: 404 });
 
+    // Generate signed URLs server-side with the service role, bypassing any
+    // client-side storage RLS ambiguity — same fix used for the product image
+    // upload issue earlier.
+    const messagesWithUrls = await Promise.all(
+      messages.map(async function (m) {
+        if (!m.attachment_url) return m;
+        const { data, error } = await supabaseAdmin.storage
+          .from("support-attachments")
+          .createSignedUrl(m.attachment_url, 3600);
+        return { ...m, signedAttachmentUrl: error ? null : data?.signedUrl };
+      })
+    );
+
     return NextResponse.json(
-      { ticket: tickets[0], messages },
+      { ticket: tickets[0], messages: messagesWithUrls },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (e) {
