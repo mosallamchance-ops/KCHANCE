@@ -47,7 +47,7 @@ export default function AdminWinnersPage() {
         {msg && <p className="text-red-600 mb-2">{msg}</p>}
         <div className="space-y-3">
           {winners.map((w) => (
-            <div key={w.id} className="card flex flex-wrap justify-between items-center gap-3 text-sm">
+            <div key={w.id} className="card flex flex-wrap justify-between items-start gap-3 text-sm">
               <div>
                 <p className="font-bold">{w.draws?.products?.name}</p>
                 <p className="text-gray-500">
@@ -57,6 +57,20 @@ export default function AdminWinnersPage() {
                   {w.prize_type === "product" ? "جائزة: المنتج" : `جائزة نقدية: $${w.prize_amount}`}
                 </p>
                 <p className="text-gray-400">{new Date(w.created_at).toLocaleDateString("ar")}</p>
+
+                {w.claim_submitted_at ? (
+                  <div className="mt-2 bg-blue-50 rounded-lg p-2 text-xs">
+                    <p className="font-bold text-brand-600">بيانات الاستلام المُرسلة من الفائز:</p>
+                    {w.claim_payment_method && (
+                      <p>طريقة الاستلام: {w.claim_payment_method === "cash" ? "نقداً" : "USDT (TRC20)"}</p>
+                    )}
+                    {w.claim_wallet_address && <p>عنوان المحفظة: {w.claim_wallet_address}</p>}
+                    {w.claim_shipping_address && <p>عنوان التوصيل: {w.claim_shipping_address}</p>}
+                    {w.claim_phone && <p>هاتف التواصل: {w.claim_phone}</p>}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-orange-500">لم يرسل الفائز بيانات الاستلام بعد.</p>
+                )}
               </div>
               <select
                 className="border rounded-lg p-2"
