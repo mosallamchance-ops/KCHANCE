@@ -2,6 +2,7 @@ import Link from "next/link";
 
 export default function AccountPage() {
   const links = [
+    { href: "/account/edit-profile", label: "معلوماتي الشخصية" },
     { href: "/account/tickets", label: "تذاكري" },
     { href: "/account/prizes", label: "جوائزي" },
     { href: "/wallet", label: "رصيدي وسجل المعاملات" },
