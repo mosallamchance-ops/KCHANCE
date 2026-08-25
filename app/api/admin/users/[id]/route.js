@@ -7,9 +7,7 @@ export const revalidate = 0;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Direct REST call to Supabase's database API, always fresh, never cached —
-// same fix applied here as the deposits list route, since this route hit
-// the identical stale-data issue.
+// Direct REST call to Supabase's database API, always fresh, never cached.
 async function restGet(path) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
@@ -73,22 +71,33 @@ export async function GET(request, { params }) {
     const agents = [...new Set((loginEvents ?? []).map((e) => e.user_agent).filter(Boolean))];
 
     if (ips.length > 0 || agents.length > 0) {
-      const ipFilter = ips.length > 0 ? `ip_address.in.(${ips.join(",")})` : null;
-      const agentFilter = agents.length > 0 ? `user_agent.in.(${agents.map((a) => `"${a}"`).join(",")})` : null;
-      const orFilter = [ipFilter, agentFilter].filter(Boolean).join(",");
+      // IP addresses are safe (digits/dots only) to put directly in a filter.
+      const ipMatches =
+        ips.length > 0
+          ? await restGet(`login_events?select=user_id,ip_address,user_agent&user_id=neq.${id}&ip_address=in.(${ips.join(",")})`)
+          : [];
 
-      const matches = await restGet(
-        `login_events?select=user_id,ip_address,user_agent&user_id=neq.${id}&or=(${orFilter})`
-      );
+      // User-agent strings contain commas/parentheses/semicolons that break
+      // PostgREST's filter syntax, so we never put them in a URL filter.
+      // Instead pull a bounded recent batch of other logins and compare in code.
+      const recentOtherLogins =
+        agents.length > 0
+          ? await restGet(
+              `login_events?select=user_id,ip_address,user_agent&user_id=neq.${id}&order=created_at.desc&limit=500`
+            )
+          : [];
+      const agentMatches = recentOtherLogins.filter((e) => agents.includes(e.user_agent));
 
-      if (matches?.length) {
-        const matchedUserIds = [...new Set(matches.map((m) => m.user_id))];
+      const allMatches = [...ipMatches, ...agentMatches];
+
+      if (allMatches.length) {
+        const matchedUserIds = [...new Set(allMatches.map((m) => m.user_id))];
         const matchedUsers = await restGet(
           `users?select=id,first_name,last_name,phone&id=in.(${matchedUserIds.join(",")})`
         );
 
         relatedAccounts = (matchedUsers ?? []).map((u) => {
-          const userMatches = matches.filter((m) => m.user_id === u.id);
+          const userMatches = allMatches.filter((m) => m.user_id === u.id);
           const sharedIp = userMatches.some((m) => ips.includes(m.ip_address));
           const sharedAgent = userMatches.some((m) => agents.includes(m.user_agent));
           return { ...u, sharedIp, sharedAgent };
