@@ -70,6 +70,7 @@ export default function Nav() {
               <a href="/wallet" className={linkClass}>
                 رصيدي
               </a>
+              <a href="/support" className={linkClass}>الدعم</a>
               {isAdmin && (
                 <a href="/admin" className="text-[var(--gold-deep)] hover:underline">
                   لوحة الإدارة
@@ -128,7 +129,7 @@ export default function Nav() {
               <a href="/wallet" className={linkClass} onClick={() => setMobileOpen(false)}>
                 رصيدي
               </a>
-              <a href="/support" className={linkClass}>الدعم</a>
+              <a href="/support" className={linkClass} onClick={() => setMobileOpen(false)}>الدعم</a>
               {isAdmin && (
                 
                   href="/admin"
