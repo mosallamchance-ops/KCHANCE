@@ -1,21 +1,119 @@
+@import url("https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --ink: #16211c;
+  --paper: #f7f8f3;
+  --card: #ffffff;
+  --emerald: #0e6b4a;
+  --emerald-deep: #0a4f37;
+  --gold: #e3a934;
+  --gold-deep: #b9841f;
+  --ember: #c1442a;
+  --line: #dedcd0;
+}
 
 html {
   direction: rtl;
 }
 
 body {
-  font-family: "Tahoma", "Segoe UI", Arial, sans-serif;
-  background-color: #f7f7fb;
-  color: #1a1a2e;
+  font-family: "Tajawal", "Tahoma", sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: "Lalezar", "Tajawal", sans-serif;
+}
+
+.font-mono-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-feature-settings: "tnum";
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .btn-primary {
-  @apply bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-5 rounded-lg transition;
+  @apply bg-[var(--emerald)] hover:bg-[var(--emerald-deep)] text-white font-bold py-2.5 px-5 rounded-xl transition-colors;
+}
+
+.btn-gold {
+  @apply bg-[var(--gold)] hover:bg-[var(--gold-deep)] text-[var(--ink)] font-bold py-2.5 px-5 rounded-xl transition-colors;
 }
 
 .card {
-  @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4;
+  @apply bg-[var(--card)] rounded-2xl border border-[var(--line)] p-4;
+  box-shadow: 0 1px 2px rgba(22, 33, 28, 0.04), 0 8px 24px -12px rgba(22, 33, 28, 0.12);
 }
+
+/* ---------- Ticket stub card: the site's signature element ---------- */
+.ticket-card {
+  @apply bg-[var(--card)] rounded-2xl overflow-hidden border border-[var(--line)] flex flex-col;
+  box-shadow: 0 1px 2px rgba(22, 33, 28, 0.05), 0 12px 28px -14px rgba(22, 33, 28, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ticket-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 2px rgba(22, 33, 28, 0.06), 0 18px 34px -14px rgba(22, 33, 28, 0.24);
+}
+
+.ticket-tear {
+  position: relative;
+  height: 18px;
+  flex-shrink: 0;
+}
+.ticket-tear::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 4%;
+  left: 4%;
+  border-top: 2px dashed var(--line);
+}
+.ticket-tear::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translateY(-50%);
+  box-shadow: -100vw 0 0 -100vw, 0 0 0 0 var(--paper);
+}
+/* left-side notch (RTL: this is the visual left edge) */
+.ticket-tear {
+  isolation: isolate;
+}
+.ticket-tear .notch-l,
+.ticket-tear .notch-r {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translateY(-50%);
+}
+.ticket-tear .notch-r {
+  right: -10px;
+}
+.ticket-tear .notch-l {
+  left: -10px;
+}
+
+/* ---------- Odometer-style countdown digits ---------- */
+.odometer-box {
+  @apply font-mono-num inline-flex items-center justify-center bg-[var(--ink)] text-white rounded-lg;
+  min-width: 2.25rem;
+  padding: 0.3rem 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+</parameter>
