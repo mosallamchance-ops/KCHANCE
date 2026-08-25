@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
     setMsg(null);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`
+      redirectTo: window.location.origin + "/auth/reset-password"
     });
 
     setLoading(false);
@@ -28,17 +28,17 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="text-xl font-bold mb-4">نسيت كلمة المرور؟</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.
-      </p>
+      <h1 className="font-display text-2xl mb-4">نسيت كلمة المرور؟</h1>
+      <p className="text-sm text-gray-500 mb-4">أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.</p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="email"
           placeholder="البريد الإلكتروني"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={function (e) {
+            setEmail(e.target.value);
+          }}
           required
         />
         <button disabled={loading} className="btn-primary w-full">
@@ -46,7 +46,9 @@ export default function ForgotPasswordPage() {
         </button>
       </form>
       {msg && (
-        <p className={`text-sm mt-3 ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
+        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+          {msg.text}
+        </p>
       )}
       <a href="/auth" className="text-sm text-gray-500 mt-4 underline block">
         العودة لتسجيل الدخول
