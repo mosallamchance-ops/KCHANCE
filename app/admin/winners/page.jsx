@@ -15,7 +15,7 @@ export default function AdminWinnersPage() {
       data: { session }
     } = await supabase.auth.getSession();
     const res = await fetch("/api/admin/winners/list", {
-      headers: { Authorization: `Bearer ${session?.access_token}` }
+      headers: { Authorization: "Bearer " + session?.access_token }
     });
     const result = await res.json();
     if (res.ok) setWinners(result.winners ?? []);
@@ -32,8 +32,8 @@ export default function AdminWinnersPage() {
     } = await supabase.auth.getSession();
     const res = await fetch("/api/admin/winners", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ winner_id, status })
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + session?.access_token },
+      body: JSON.stringify({ winner_id: winner_id, status: status })
     });
     const result = await res.json();
     if (!res.ok) setMsg(result.error);
@@ -43,48 +43,54 @@ export default function AdminWinnersPage() {
   return (
     <AdminGuard>
       <div>
-        <h1 className="text-xl font-bold mb-4">الفائزون والجوائز</h1>
-        {msg && <p className="text-red-600 mb-2">{msg}</p>}
+        <h1 className="font-display text-2xl mb-4">الفائزون والجوائز</h1>
+        {msg && <p className="text-[var(--ember)] mb-2">{msg}</p>}
         <div className="space-y-3">
-          {winners.map((w) => (
-            <div key={w.id} className="card flex flex-wrap justify-between items-start gap-3 text-sm">
-              <div>
-                <p className="font-bold">{w.draws?.products?.name}</p>
-                <p className="text-gray-500">
-                  {w.users?.first_name} {w.users?.last_name} — {w.users?.phone}
-                </p>
-                <p className="text-gray-500">
-                  {w.prize_type === "product" ? "جائزة: المنتج" : `جائزة نقدية: $${w.prize_amount}`}
-                </p>
-                <p className="text-gray-400">{new Date(w.created_at).toLocaleDateString("ar")}</p>
+          {winners.map(function (w) {
+            return (
+              <div key={w.id} className="card flex flex-wrap justify-between items-start gap-3 text-sm">
+                <div>
+                  <p className="font-bold">{w.draws?.products?.name}</p>
+                  <p className="text-gray-500">
+                    {w.users?.first_name} {w.users?.last_name} — {w.users?.phone}
+                  </p>
+                  <p className="text-gray-500 font-mono-num">
+                    {w.prize_type === "product" ? "جائزة: المنتج" : "جائزة نقدية: $" + w.prize_amount}
+                  </p>
+                  <p className="text-gray-400">{new Date(w.created_at).toLocaleDateString("ar")}</p>
 
-                {w.claim_submitted_at ? (
-                  <div className="mt-2 bg-blue-50 rounded-lg p-2 text-xs">
-                    <p className="font-bold text-brand-600">بيانات الاستلام المُرسلة من الفائز:</p>
-                    {w.claim_payment_method && (
-                      <p>طريقة الاستلام: {w.claim_payment_method === "cash" ? "نقداً" : "USDT (TRC20)"}</p>
-                    )}
-                    {w.claim_wallet_address && <p>عنوان المحفظة: {w.claim_wallet_address}</p>}
-                    {w.claim_shipping_address && <p>عنوان التوصيل: {w.claim_shipping_address}</p>}
-                    {w.claim_phone && <p>هاتف التواصل: {w.claim_phone}</p>}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs text-orange-500">لم يرسل الفائز بيانات الاستلام بعد.</p>
-                )}
+                  {w.claim_submitted_at ? (
+                    <div className="mt-2 bg-[var(--paper)] rounded-lg p-2 text-xs">
+                      <p className="font-bold text-[var(--emerald)]">بيانات الاستلام المُرسلة من الفائز:</p>
+                      {w.claim_payment_method && (
+                        <p>طريقة الاستلام: {w.claim_payment_method === "cash" ? "نقداً" : "USDT (TRC20)"}</p>
+                      )}
+                      {w.claim_wallet_address && <p>عنوان المحفظة: {w.claim_wallet_address}</p>}
+                      {w.claim_shipping_address && <p>عنوان التوصيل: {w.claim_shipping_address}</p>}
+                      {w.claim_phone && <p>هاتف التواصل: {w.claim_phone}</p>}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-[var(--gold-deep)]">لم يرسل الفائز بيانات الاستلام بعد.</p>
+                  )}
+                </div>
+                <select
+                  className="border border-[var(--line)] rounded-lg p-2"
+                  value={w.status}
+                  onChange={function (e) {
+                    updateStatus(w.id, e.target.value);
+                  }}
+                >
+                  {statusOptions.map(function (s) {
+                    return (
+                      <option key={s} value={s}>
+                        {statusAr[s]}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
-              <select
-                className="border rounded-lg p-2"
-                value={w.status}
-                onChange={(e) => updateStatus(w.id, e.target.value)}
-              >
-                {statusOptions.map((s) => (
-                  <option key={s} value={s}>
-                    {statusAr[s]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+            );
+          })}
           {winners.length === 0 && <p className="text-gray-500">لا يوجد فائزون بعد.</p>}
         </div>
       </div>
