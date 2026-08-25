@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Countdown from "@/components/Countdown";
 
 export default function DrawDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [draw, setDraw] = useState(null);
   const [qty, setQty] = useState(1);
   const [balance, setBalance] = useState(0);
@@ -134,15 +135,22 @@ export default function DrawDetailPage() {
               <p className="font-bold mb-1">سجّل الدخول لشراء تذاكر هذا السحب</p>
               <p className="text-sm text-gray-500 mb-4">تحتاج إلى حساب لتتمكن من المشاركة في السحب.</p>
               <div className="flex gap-2">
-                <a href="/auth" className="btn-primary flex-1 text-center">
+                <button
+                  className="btn-primary flex-1"
+                  onClick={function () {
+                    router.push("/auth");
+                  }}
+                >
                   تسجيل الدخول
-                </a>
-                
-                  href="/auth"
-                  className="flex-1 text-center py-2.5 px-4 rounded-xl border border-[var(--line)] font-bold"
+                </button>
+                <button
+                  className="flex-1 py-2.5 px-4 rounded-xl border border-[var(--line)] font-bold"
+                  onClick={function () {
+                    router.push("/auth");
+                  }}
                 >
                   إنشاء حساب جديد
-                </a>
+                </button>
               </div>
             </div>
           ) : (
