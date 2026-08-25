@@ -22,9 +22,6 @@ export default function ChangePasswordPage() {
 
     setLoading(true);
 
-    // Re-verify the current password by attempting a fresh sign-in before
-    // allowing the change, so someone who left a session open elsewhere
-    // can't change the password without knowing the current one.
     const {
       data: { user }
     } = await supabase.auth.getUser();
@@ -53,30 +50,36 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="text-xl font-bold mb-4">تغيير كلمة المرور</h1>
+      <h1 className="font-display text-2xl mb-4">تغيير كلمة المرور</h1>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="password"
           placeholder="كلمة المرور الحالية"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          onChange={function (e) {
+            setCurrentPassword(e.target.value);
+          }}
           required
         />
         <input
           type="password"
           placeholder="كلمة المرور الجديدة"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
+          onChange={function (e) {
+            setNewPassword(e.target.value);
+          }}
           required
         />
         <input
           type="password"
           placeholder="تأكيد كلمة المرور الجديدة"
-          className="w-full border rounded-lg p-2"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={function (e) {
+            setConfirmPassword(e.target.value);
+          }}
           required
         />
         <button disabled={loading} className="btn-primary w-full">
@@ -84,7 +87,9 @@ export default function ChangePasswordPage() {
         </button>
       </form>
       {msg && (
-        <p className={`text-sm mt-3 ${msg.type === "error" ? "text-red-600" : "text-green-600"}`}>{msg.text}</p>
+        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+          {msg.text}
+        </p>
       )}
     </div>
   );
