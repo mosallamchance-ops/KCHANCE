@@ -76,6 +76,13 @@ export default function AuthPage() {
         <button className="btn-primary w-full">{mode === "login" ? "دخول" : "تسجيل"}</button>
       </form>
       {msg && <p className="text-sm text-brand-600 mt-3">{msg}</p>}
+
+      {mode === "login" && (
+        <a href="/auth/forgot-password" className="text-sm text-gray-500 mt-3 underline block">
+          نسيت كلمة المرور؟
+        </a>
+      )}
+
       <button
         className="text-sm text-gray-500 mt-4 underline"
         onClick={() => setMode(mode === "login" ? "signup" : "login")}
