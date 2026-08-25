@@ -42,7 +42,7 @@ export default function Nav() {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
+    return function () {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
@@ -60,6 +60,11 @@ export default function Nav() {
 
   function closeMobile() {
     setMobileOpen(false);
+  }
+
+  function goTo(href) {
+    setMobileOpen(false);
+    router.push(href);
   }
 
   const mobileLinks = [
@@ -129,19 +134,19 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Backdrop */}
       <div
         onClick={closeMobile}
-        className={`md:hidden fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={
+          "md:hidden fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 " +
+          (mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none")
+        }
       />
 
-      {/* Slide-in drawer (from the right, natural reading start in RTL) */}
       <div
-        className={`md:hidden fixed top-0 right-0 h-full w-72 max-w-[85vw] bg-[var(--card)] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={
+          "md:hidden fixed top-0 right-0 h-full w-72 max-w-[85vw] bg-[var(--card)] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out " +
+          (mobileOpen ? "translate-x-0" : "translate-x-full")
+        }
       >
         <div className="flex items-center justify-between p-4 border-b border-[var(--line)]">
           <span className="font-display text-xl text-[var(--emerald)]">القائمة</span>
@@ -155,27 +160,31 @@ export default function Nav() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
-          {mobileLinks.map((l) => (
-            
-              key={l.href}
-              href={l.href}
-              onClick={closeMobile}
-              className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold hover:bg-[var(--paper)] transition-colors"
-            >
-              {l.label}
-              <span className="text-[var(--line)]">‹</span>
-            </a>
-          ))}
+          {mobileLinks.map(function (l) {
+            return (
+              <div
+                key={l.href}
+                onClick={function () {
+                  goTo(l.href);
+                }}
+                className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold hover:bg-[var(--paper)] transition-colors cursor-pointer"
+              >
+                <span>{l.label}</span>
+                <span className="text-[var(--line)]">‹</span>
+              </div>
+            );
+          })}
 
           {loggedIn && isAdmin && (
-            
-              href="/admin"
-              onClick={closeMobile}
-              className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold text-[var(--gold-deep)] hover:bg-[var(--paper)] transition-colors"
+            <div
+              onClick={function () {
+                goTo("/admin");
+              }}
+              className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold text-[var(--gold-deep)] hover:bg-[var(--paper)] transition-colors cursor-pointer"
             >
-              لوحة الإدارة
+              <span>لوحة الإدارة</span>
               <span>‹</span>
-            </a>
+            </div>
           )}
         </div>
 
@@ -188,9 +197,14 @@ export default function Nav() {
               تسجيل الخروج
             </button>
           ) : (
-            <a href="/auth" onClick={closeMobile} className="btn-primary w-full text-center block">
+            <button
+              onClick={function () {
+                goTo("/auth");
+              }}
+              className="btn-primary w-full text-center block"
+            >
               تسجيل الدخول
-            </a>
+            </button>
           )}
         </div>
       </div>
