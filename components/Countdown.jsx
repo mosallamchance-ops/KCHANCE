@@ -10,6 +10,10 @@ function getRemaining(endAt) {
   return { days, hours, minutes };
 }
 
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
+
 export default function Countdown({ endAt }) {
   const [remaining, setRemaining] = useState(() => getRemaining(endAt));
 
@@ -18,11 +22,18 @@ export default function Countdown({ endAt }) {
     return () => clearInterval(id);
   }, [endAt]);
 
-  if (!remaining) return <span className="text-red-600 font-bold">انتهى الوقت</span>;
+  if (!remaining) {
+    return <span className="text-[var(--ember)] font-bold">انتهى الوقت</span>;
+  }
 
   return (
-    <span>
-      {remaining.days} يوم {remaining.hours} ساعة {remaining.minutes} دقيقة
+    <span className="inline-flex items-center gap-1.5" dir="ltr">
+      <span className="odometer-box">{pad(remaining.days)}</span>
+      <span className="text-xs text-gray-400">ي</span>
+      <span className="odometer-box">{pad(remaining.hours)}</span>
+      <span className="text-xs text-gray-400">س</span>
+      <span className="odometer-box">{pad(remaining.minutes)}</span>
+      <span className="text-xs text-gray-400">د</span>
     </span>
   );
 }
