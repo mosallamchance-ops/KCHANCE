@@ -148,7 +148,7 @@ export default function AdminSupportThreadPage() {
             />
             <FileUpload
               bucket="support-attachments"
-              viaServerEndpoint="/api/admin/upload-image"
+              viaServerEndpoint="/api/admin/upload-support-attachment"
               label="إرفاق صورة (اختياري)"
               onUploaded={setAttachment}
             />
