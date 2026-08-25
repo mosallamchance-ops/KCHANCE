@@ -50,10 +50,13 @@ export default function Nav() {
 
   const linkClass = "hover:text-[var(--emerald)] transition-colors";
 
+  function closeMobile() {
+    setMobileOpen(false);
+  }
+
   return (
     <div className="relative">
       <div className="flex items-center gap-3">
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
           <a href="/" className={linkClass}>
             السحوبات
@@ -62,15 +65,17 @@ export default function Nav() {
             النتائج
           </a>
 
-          {loggedIn ? (
-            <>
+          {loggedIn && (
+            <div className="hidden md:flex items-center gap-6">
               <a href="/account" className={linkClass}>
                 حسابي
               </a>
               <a href="/wallet" className={linkClass}>
                 رصيدي
               </a>
-              <a href="/support" className={linkClass}>الدعم</a>
+              <a href="/support" className={linkClass}>
+                الدعم
+              </a>
               {isAdmin && (
                 <a href="/admin" className="text-[var(--gold-deep)] hover:underline">
                   لوحة الإدارة
@@ -80,15 +85,16 @@ export default function Nav() {
               <button onClick={handleLogout} className="text-gray-500 hover:text-[var(--ember)] font-medium">
                 تسجيل الخروج
               </button>
-            </>
-          ) : (
+            </div>
+          )}
+
+          {!loggedIn && (
             <a href="/auth" className="btn-primary text-sm">
               تسجيل الدخول
             </a>
           )}
         </nav>
 
-        {/* Mobile: bell (if logged in) + hamburger */}
         <div className="flex md:hidden items-center gap-3">
           {loggedIn && <NotificationBell />}
           <button
@@ -112,39 +118,42 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Mobile dropdown panel */}
       {mobileOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--card)] border border-[var(--line)] rounded-2xl mt-2 p-4 flex flex-col gap-3 text-sm font-bold shadow-lg z-30">
-          <a href="/" className={linkClass} onClick={() => setMobileOpen(false)}>
+          <a href="/" className={linkClass} onClick={closeMobile}>
             السحوبات
           </a>
-          <a href="/results" className={linkClass} onClick={() => setMobileOpen(false)}>
+          <a href="/results" className={linkClass} onClick={closeMobile}>
             النتائج
           </a>
-          {loggedIn ? (
-            <>
-              <a href="/account" className={linkClass} onClick={() => setMobileOpen(false)}>
-                حسابي
-              </a>
-              <a href="/wallet" className={linkClass} onClick={() => setMobileOpen(false)}>
-                رصيدي
-              </a>
-              <a href="/support" className={linkClass} onClick={() => setMobileOpen(false)}>الدعم</a>
-              {isAdmin && (
-                
-                  href="/admin"
-                  className="text-[var(--gold-deep)]"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  لوحة الإدارة
-                </a>
-              )}
-              <button onClick={handleLogout} className="text-[var(--ember)] text-right">
-                تسجيل الخروج
-              </button>
-            </>
-          ) : (
-            <a href="/auth" className="btn-primary text-center" onClick={() => setMobileOpen(false)}>
+
+          {loggedIn && (
+            <a href="/account" className={linkClass} onClick={closeMobile}>
+              حسابي
+            </a>
+          )}
+          {loggedIn && (
+            <a href="/wallet" className={linkClass} onClick={closeMobile}>
+              رصيدي
+            </a>
+          )}
+          {loggedIn && (
+            <a href="/support" className={linkClass} onClick={closeMobile}>
+              الدعم
+            </a>
+          )}
+          {loggedIn && isAdmin && (
+            <a href="/admin" className="text-[var(--gold-deep)]" onClick={closeMobile}>
+              لوحة الإدارة
+            </a>
+          )}
+          {loggedIn && (
+            <button onClick={handleLogout} className="text-[var(--ember)] text-right">
+              تسجيل الخروج
+            </button>
+          )}
+          {!loggedIn && (
+            <a href="/auth" className="btn-primary text-center" onClick={closeMobile}>
               تسجيل الدخول
             </a>
           )}
