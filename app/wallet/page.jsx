@@ -67,10 +67,10 @@ export default function WalletPage() {
   return (
     <div className="grid md:grid-cols-2 gap-6">
       <div>
-        <div className="card">
-          <p className="text-gray-500">الرصيد الحالي</p>
-          <p className="text-3xl font-extrabold text-brand-600">${balance}</p>
-          <p className="text-xs text-gray-400 mt-1">
+        <div className="card bg-[var(--ink)] text-white border-none">
+          <p className="text-white/60 text-sm">الرصيد الحالي</p>
+          <p className="font-display text-4xl text-[var(--gold)]">${balance}</p>
+          <p className="text-xs text-white/40 mt-2">
             ملاحظة: لا يمكن سحب الرصيد. الجوائز النقدية تُرسل كهدية مباشرة من الإدارة عند الفوز.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function WalletPage() {
         <div className="card mt-4">
           <h2 className="font-bold mb-2">تعليمات التحويل</h2>
           <p className="text-sm">اسم المحفظة: {WALLET_NAME}</p>
-          <p className="text-sm break-all">رقم المحفظة: {WALLET_ADDRESS}</p>
+          <p className="text-sm break-all font-mono-num">رقم المحفظة: {WALLET_ADDRESS}</p>
           <p className="text-xs text-gray-500 mt-2">
             حوّل المبلغ إلى المحفظة أعلاه، ثم أرسل طلب شحن الرصيد بالتفاصيل أدناه.
           </p>
@@ -90,47 +90,55 @@ export default function WalletPage() {
             type="number"
             step="0.01"
             placeholder="المبلغ المحول"
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-[var(--line)] rounded-lg p-2"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={function (e) {
+              setAmount(e.target.value);
+            }}
             required
           />
           <input
             placeholder="رقم/كود الحوالة"
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-[var(--line)] rounded-lg p-2"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={function (e) {
+              setCode(e.target.value);
+            }}
             required
           />
           <input
             placeholder="رقم المحفظة المرسل منها"
-            className="w-full border rounded-lg p-2"
+            className="w-full border border-[var(--line)] rounded-lg p-2"
             value={senderWallet}
-            onChange={(e) => setSenderWallet(e.target.value)}
+            onChange={function (e) {
+              setSenderWallet(e.target.value);
+            }}
           />
           {userId && (
             <FileUpload bucket="receipts" pathPrefix={userId} label="صورة إيصال التحويل" onUploaded={setReceiptPath} />
           )}
           <button className="btn-primary w-full">إرسال طلب الشحن</button>
-          {msg && <p className="text-sm text-brand-600">{msg}</p>}
+          {msg && <p className="text-sm text-[var(--emerald)]">{msg}</p>}
         </form>
       </div>
 
       <div>
         <h2 className="font-bold mb-2">سجل المعاملات</h2>
         <div className="space-y-2">
-          {txns.map((t) => (
-            <div key={t.id} className="card flex justify-between text-sm">
-              <div>
-                <p className="font-bold">{t.description}</p>
-                <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+          {txns.map(function (t) {
+            return (
+              <div key={t.id} className="card flex justify-between text-sm">
+                <div>
+                  <p className="font-bold">{t.description}</p>
+                  <p className="text-gray-400">{new Date(t.created_at).toLocaleString("ar")}</p>
+                </div>
+                <p className={"font-mono-num font-bold " + (t.amount >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
+                  {t.amount >= 0 ? "+" : ""}
+                  {t.amount}$
+                </p>
               </div>
-              <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                {t.amount >= 0 ? "+" : ""}
-                {t.amount}$
-              </p>
-            </div>
-          ))}
+            );
+          })}
           {txns.length === 0 && <p className="text-gray-500 text-sm">لا توجد معاملات بعد.</p>}
         </div>
       </div>
