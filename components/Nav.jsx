@@ -40,8 +40,16 @@ export default function Nav() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   async function handleLogout() {
     await supabase.auth.signOut();
+    setMobileOpen(false);
     router.push("/");
     router.refresh();
   }
@@ -54,8 +62,20 @@ export default function Nav() {
     setMobileOpen(false);
   }
 
+  const mobileLinks = [
+    { href: "/", label: "السحوبات" },
+    { href: "/results", label: "النتائج" }
+  ];
+  if (loggedIn) {
+    mobileLinks.push(
+      { href: "/account", label: "حسابي" },
+      { href: "/wallet", label: "رصيدي" },
+      { href: "/support", label: "الدعم" }
+    );
+  }
+
   return (
-    <div className="relative">
+    <div>
       <div className="flex items-center gap-3">
         <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
           <a href="/" className={linkClass}>
@@ -66,7 +86,7 @@ export default function Nav() {
           </a>
 
           {loggedIn && (
-            <div className="hidden md:flex items-center gap-6">
+            <>
               <a href="/account" className={linkClass}>
                 حسابي
               </a>
@@ -85,7 +105,7 @@ export default function Nav() {
               <button onClick={handleLogout} className="text-gray-500 hover:text-[var(--ember)] font-medium">
                 تسجيل الخروج
               </button>
-            </div>
+            </>
           )}
 
           {!loggedIn && (
@@ -98,67 +118,82 @@ export default function Nav() {
         <div className="flex md:hidden items-center gap-3">
           {loggedIn && <NotificationBell />}
           <button
-            onClick={() => setMobileOpen((o) => !o)}
-            aria-label="القائمة"
-            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-[var(--line)]"
+            onClick={() => setMobileOpen(true)}
+            aria-label="فتح القائمة"
+            className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-[var(--line)]"
           >
-            <span
-              className="block w-5 h-0.5 bg-[var(--ink)] transition-transform"
-              style={mobileOpen ? { transform: "translateY(6px) rotate(45deg)" } : {}}
-            />
-            <span
-              className="block w-5 h-0.5 bg-[var(--ink)] transition-opacity"
-              style={mobileOpen ? { opacity: 0 } : {}}
-            />
-            <span
-              className="block w-5 h-0.5 bg-[var(--ink)] transition-transform"
-              style={mobileOpen ? { transform: "translateY(-6px) rotate(-45deg)" } : {}}
-            />
+            <span className="block w-5 h-0.5 bg-[var(--ink)]" />
+            <span className="block w-5 h-0.5 bg-[var(--ink)]" />
+            <span className="block w-5 h-0.5 bg-[var(--ink)]" />
           </button>
         </div>
       </div>
 
-      {mobileOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--card)] border border-[var(--line)] rounded-2xl mt-2 p-4 flex flex-col gap-3 text-sm font-bold shadow-lg z-30">
-          <a href="/" className={linkClass} onClick={closeMobile}>
-            السحوبات
-          </a>
-          <a href="/results" className={linkClass} onClick={closeMobile}>
-            النتائج
-          </a>
+      {/* Backdrop */}
+      <div
+        onClick={closeMobile}
+        className={`md:hidden fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 ${
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      />
 
-          {loggedIn && (
-            <a href="/account" className={linkClass} onClick={closeMobile}>
-              حسابي
+      {/* Slide-in drawer (from the right, natural reading start in RTL) */}
+      <div
+        className={`md:hidden fixed top-0 right-0 h-full w-72 max-w-[85vw] bg-[var(--card)] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-[var(--line)]">
+          <span className="font-display text-xl text-[var(--emerald)]">القائمة</span>
+          <button
+            onClick={closeMobile}
+            aria-label="إغلاق القائمة"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--line)] text-lg"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-2">
+          {mobileLinks.map((l) => (
+            
+              key={l.href}
+              href={l.href}
+              onClick={closeMobile}
+              className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold hover:bg-[var(--paper)] transition-colors"
+            >
+              {l.label}
+              <span className="text-[var(--line)]">‹</span>
             </a>
-          )}
-          {loggedIn && (
-            <a href="/wallet" className={linkClass} onClick={closeMobile}>
-              رصيدي
-            </a>
-          )}
-          {loggedIn && (
-            <a href="/support" className={linkClass} onClick={closeMobile}>
-              الدعم
-            </a>
-          )}
+          ))}
+
           {loggedIn && isAdmin && (
-            <a href="/admin" className="text-[var(--gold-deep)]" onClick={closeMobile}>
+            
+              href="/admin"
+              onClick={closeMobile}
+              className="flex items-center justify-between px-3 py-3.5 rounded-xl text-base font-bold text-[var(--gold-deep)] hover:bg-[var(--paper)] transition-colors"
+            >
               لوحة الإدارة
+              <span>‹</span>
             </a>
           )}
-          {loggedIn && (
-            <button onClick={handleLogout} className="text-[var(--ember)] text-right">
+        </div>
+
+        <div className="p-4 border-t border-[var(--line)]">
+          {loggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="w-full text-center py-3 rounded-xl border border-[var(--ember)] text-[var(--ember)] font-bold"
+            >
               تسجيل الخروج
             </button>
-          )}
-          {!loggedIn && (
-            <a href="/auth" className="btn-primary text-center" onClick={closeMobile}>
+          ) : (
+            <a href="/auth" onClick={closeMobile} className="btn-primary w-full text-center block">
               تسجيل الدخول
             </a>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
