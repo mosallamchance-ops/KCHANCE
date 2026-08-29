@@ -26,18 +26,31 @@ export async function GET(request) {
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
   try {
-    const [leaderboard, dailyStats, topActive, funnel, funnelDays, drawPerf, revenue, provinces, churned] =
-      await Promise.all([
-        supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
-        supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
-        supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
-        supabaseAdmin.rpc("funnel_stats"),
-        supabaseAdmin.rpc("funnel_avg_days"),
-        supabaseAdmin.rpc("draw_performance_stats"),
-        supabaseAdmin.rpc("revenue_summary"),
-        supabaseAdmin.rpc("province_breakdown"),
-        supabaseAdmin.rpc("churned_users", { p_inactive_days: 21 })
-      ]);
+    const [
+      leaderboard,
+      dailyStats,
+      topActive,
+      funnel,
+      funnelDays,
+      drawPerf,
+      revenue,
+      provinces,
+      churned,
+      conversionWindows,
+      walletConversion
+    ] = await Promise.all([
+      supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
+      supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
+      supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
+      supabaseAdmin.rpc("funnel_stats"),
+      supabaseAdmin.rpc("funnel_avg_days"),
+      supabaseAdmin.rpc("draw_performance_stats"),
+      supabaseAdmin.rpc("revenue_summary"),
+      supabaseAdmin.rpc("province_breakdown"),
+      supabaseAdmin.rpc("churned_users", { p_inactive_days: 21 }),
+      supabaseAdmin.rpc("cohort_conversion_windows"),
+      supabaseAdmin.rpc("wallet_view_conversion")
+    ]);
 
     if (leaderboard.error) return adminErrorResponse(leaderboard.error, 500, "insights: leaderboard");
     if (dailyStats.error) return adminErrorResponse(dailyStats.error, 500, "insights: daily stats");
@@ -48,6 +61,9 @@ export async function GET(request) {
     if (revenue.error) return adminErrorResponse(revenue.error, 500, "insights: revenue summary");
     if (provinces.error) return adminErrorResponse(provinces.error, 500, "insights: provinces");
     if (churned.error) return adminErrorResponse(churned.error, 500, "insights: churned users");
+    if (conversionWindows.error)
+      return adminErrorResponse(conversionWindows.error, 500, "insights: conversion windows");
+    if (walletConversion.error) return adminErrorResponse(walletConversion.error, 500, "insights: wallet conversion");
 
     return NextResponse.json(
       {
@@ -59,7 +75,9 @@ export async function GET(request) {
         drawPerf: drawPerf.data,
         revenue: revenue.data?.[0] ?? null,
         provinces: provinces.data,
-        churned: churned.data
+        churned: churned.data,
+        conversionWindows: conversionWindows.data,
+        walletConversion: walletConversion.data?.[0] ?? null
       },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
