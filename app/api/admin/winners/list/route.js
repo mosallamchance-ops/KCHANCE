@@ -29,7 +29,7 @@ export async function GET(request) {
   // Direct REST call to Supabase's database API, always fresh, never cached —
   // same fix applied to every other admin read route.
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/winners?select=id,prize_type,prize_amount,status,created_at,users(first_name,last_name,phone),draws(products(name))&order=created_at.desc`,
+       `${SUPABASE_URL}/rest/v1/winners?select=id,prize_type,prize_amount,status,published,created_at,claim_payment_method,claim_wallet_address,claim_shipping_address,claim_phone,claim_submitted_at,users(first_name,last_name,phone),draws(products(name))&order=created_at.desc` 
     {
       headers: {
         apikey: SERVICE_KEY,
