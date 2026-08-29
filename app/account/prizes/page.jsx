@@ -7,7 +7,7 @@ const statusAr = { pending: "قيد الانتظار", verified: "تم التح�
 export default function MyPrizesPage() {
   const [prizes, setPrizes] = useState([]);
 
-  useEffect(() => {
+  useEffect(function () {
     async function load() {
       const {
         data: { user }
@@ -18,6 +18,7 @@ export default function MyPrizesPage() {
         .from("winners")
         .select("id, prize_type, prize_amount, status, created_at, draws(products(name))")
         .eq("user_id", user.id)
+        .eq("published", true)
         .order("created_at", { ascending: false });
 
       setPrizes(data ?? []);
