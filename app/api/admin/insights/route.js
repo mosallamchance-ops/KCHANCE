@@ -26,15 +26,18 @@ export async function GET(request) {
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
   try {
-        const [leaderboard, dailyStats, topActive, funnel, funnelDays, drawPerf, revenue] = await Promise.all([
-      supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
-      supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
-      supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
-      supabaseAdmin.rpc("funnel_stats"),
-      supabaseAdmin.rpc("funnel_avg_days"),
-      supabaseAdmin.rpc("draw_performance_stats"),
-      supabaseAdmin.rpc("revenue_summary")
-    ]);
+    const [leaderboard, dailyStats, topActive, funnel, funnelDays, drawPerf, revenue, provinces, churned] =
+      await Promise.all([
+        supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
+        supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
+        supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
+        supabaseAdmin.rpc("funnel_stats"),
+        supabaseAdmin.rpc("funnel_avg_days"),
+        supabaseAdmin.rpc("draw_performance_stats"),
+        supabaseAdmin.rpc("revenue_summary"),
+        supabaseAdmin.rpc("province_breakdown"),
+        supabaseAdmin.rpc("churned_users", { p_inactive_days: 21 })
+      ]);
 
     if (leaderboard.error) return adminErrorResponse(leaderboard.error, 500, "insights: leaderboard");
     if (dailyStats.error) return adminErrorResponse(dailyStats.error, 500, "insights: daily stats");
@@ -43,6 +46,8 @@ export async function GET(request) {
     if (funnelDays.error) return adminErrorResponse(funnelDays.error, 500, "insights: funnel days");
     if (drawPerf.error) return adminErrorResponse(drawPerf.error, 500, "insights: draw performance");
     if (revenue.error) return adminErrorResponse(revenue.error, 500, "insights: revenue summary");
+    if (provinces.error) return adminErrorResponse(provinces.error, 500, "insights: provinces");
+    if (churned.error) return adminErrorResponse(churned.error, 500, "insights: churned users");
 
     return NextResponse.json(
       {
@@ -52,7 +57,9 @@ export async function GET(request) {
         funnel: funnel.data?.[0] ?? null,
         funnelDays: funnelDays.data?.[0] ?? null,
         drawPerf: drawPerf.data,
-        revenue: revenue.data?.[0] ?? null
+        revenue: revenue.data?.[0] ?? null,
+        provinces: provinces.data,
+        churned: churned.data
       },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
