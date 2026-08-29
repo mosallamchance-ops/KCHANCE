@@ -12,16 +12,25 @@ const tabs = [
 
 export default function AdminDepositsPage() {
   const [activeTab, setActiveTab] = useState("pending");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [deposits, setDeposits] = useState([]);
   const [msg, setMsg] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
 
-  async function load(status) {
+  function buildQuery() {
+    let q = "status=" + activeTab;
+    if (dateFrom) q += "&date_from=" + dateFrom;
+    if (dateTo) q += "&date_to=" + dateTo;
+    return q;
+  }
+
+  async function load() {
     const {
       data: { session }
     } = await supabase.auth.getSession();
-    const res = await fetch("/api/admin/deposits/list?status=" + status, {
+    const res = await fetch("/api/admin/deposits/list?" + buildQuery(), {
       headers: { Authorization: "Bearer " + session?.access_token }
     });
     const result = await res.json();
@@ -30,9 +39,9 @@ export default function AdminDepositsPage() {
 
   useEffect(
     function () {
-      load(activeTab);
+      load();
     },
-    [activeTab]
+    [activeTab, dateFrom, dateTo]
   );
 
   async function viewReceipt(path) {
@@ -53,14 +62,14 @@ export default function AdminDepositsPage() {
     });
     const result = await res.json();
     if (!res.ok) setMsg(result.error);
-    else load(activeTab);
+    else load();
   }
 
   async function exportExcel() {
     const {
       data: { session }
     } = await supabase.auth.getSession();
-    const res = await fetch("/api/admin/deposits/export?status=" + activeTab, {
+    const res = await fetch("/api/admin/deposits/export?" + buildQuery(), {
       headers: { Authorization: "Bearer " + session?.access_token }
     });
     if (!res.ok) {
@@ -103,7 +112,7 @@ export default function AdminDepositsPage() {
       setMsg(result.error);
     } else {
       setImportResult(result);
-      load(activeTab);
+      load();
     }
   }
 
@@ -142,6 +151,42 @@ export default function AdminDepositsPage() {
               </button>
             );
           })}
+        </div>
+
+        <div className="flex flex-wrap gap-2 items-end mb-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">من تاريخ</label>
+            <input
+              type="date"
+              className="border border-[var(--line)] rounded-lg p-2 text-sm"
+              value={dateFrom}
+              onChange={function (e) {
+                setDateFrom(e.target.value);
+              }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">إلى تاريخ</label>
+            <input
+              type="date"
+              className="border border-[var(--line)] rounded-lg p-2 text-sm"
+              value={dateTo}
+              onChange={function (e) {
+                setDateTo(e.target.value);
+              }}
+            />
+          </div>
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={function () {
+                setDateFrom("");
+                setDateTo("");
+              }}
+              className="text-sm text-gray-500 underline pb-2"
+            >
+              مسح التاريخ
+            </button>
+          )}
         </div>
 
         <p className="text-xs text-gray-500 mb-4">
