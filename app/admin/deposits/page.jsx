@@ -3,26 +3,37 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import AdminGuard from "@/components/AdminGuard";
 
+const tabs = [
+  { key: "pending", label: "معلقة" },
+  { key: "approved", label: "مقبولة" },
+  { key: "rejected", label: "مرفوضة" },
+  { key: "all", label: "الكل" }
+];
+
 export default function AdminDepositsPage() {
+  const [activeTab, setActiveTab] = useState("pending");
   const [deposits, setDeposits] = useState([]);
   const [msg, setMsg] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
 
-  async function load() {
+  async function load(status) {
     const {
       data: { session }
     } = await supabase.auth.getSession();
-    const res = await fetch("/api/admin/deposits/list", {
+    const res = await fetch("/api/admin/deposits/list?status=" + status, {
       headers: { Authorization: "Bearer " + session?.access_token }
     });
     const result = await res.json();
     if (res.ok) setDeposits(result.deposits ?? []);
   }
 
-  useEffect(function () {
-    load();
-  }, []);
+  useEffect(
+    function () {
+      load(activeTab);
+    },
+    [activeTab]
+  );
 
   async function viewReceipt(path) {
     if (!path) return;
@@ -42,14 +53,14 @@ export default function AdminDepositsPage() {
     });
     const result = await res.json();
     if (!res.ok) setMsg(result.error);
-    else load();
+    else load(activeTab);
   }
 
   async function exportExcel() {
     const {
       data: { session }
     } = await supabase.auth.getSession();
-    const res = await fetch("/api/admin/deposits/export", {
+    const res = await fetch("/api/admin/deposits/export?status=" + activeTab, {
       headers: { Authorization: "Bearer " + session?.access_token }
     });
     if (!res.ok) {
@@ -61,7 +72,7 @@ export default function AdminDepositsPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "deposits.xlsx";
+    a.download = "deposits-" + activeTab + ".xlsx";
     a.click();
     window.URL.revokeObjectURL(url);
   }
@@ -92,7 +103,7 @@ export default function AdminDepositsPage() {
       setMsg(result.error);
     } else {
       setImportResult(result);
-      load();
+      load(activeTab);
     }
   }
 
@@ -100,7 +111,7 @@ export default function AdminDepositsPage() {
     <AdminGuard>
       <div>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h1 className="font-display text-2xl">طلبات شحن الرصيد المعلقة</h1>
+          <h1 className="font-display text-2xl">طلبات شحن الرصيد</h1>
           <div className="flex gap-2 items-center">
             <button onClick={exportExcel} className="py-2 px-4 rounded-lg border border-[var(--line)] text-sm font-bold">
               ⬇ تصدير Excel
@@ -110,6 +121,27 @@ export default function AdminDepositsPage() {
               <input type="file" accept=".xlsx" className="hidden" onChange={importExcel} disabled={importing} />
             </label>
           </div>
+        </div>
+
+        <div className="flex gap-2 mb-4 border-b border-[var(--line)]">
+          {tabs.map(function (t) {
+            return (
+              <button
+                key={t.key}
+                onClick={function () {
+                  setActiveTab(t.key);
+                }}
+                className={
+                  "px-4 py-2 text-sm font-bold border-b-2 -mb-px " +
+                  (activeTab === t.key
+                    ? "border-[var(--emerald)] text-[var(--emerald)]"
+                    : "border-transparent text-gray-400")
+                }
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
         <p className="text-xs text-gray-500 mb-4">
@@ -158,29 +190,34 @@ export default function AdminDepositsPage() {
                       عرض الإيصال
                     </button>
                   )}
+                  {d.rejection_reason && (
+                    <p className="text-[var(--ember)] text-xs mt-1">سبب الرفض: {d.rejection_reason}</p>
+                  )}
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    className="btn-primary"
-                    onClick={function () {
-                      act(d.id, "approve");
-                    }}
-                  >
-                    قبول
-                  </button>
-                  <button
-                    className="py-2.5 px-4 rounded-xl border border-[var(--ember)] text-[var(--ember)] font-bold"
-                    onClick={function () {
-                      act(d.id, "reject");
-                    }}
-                  >
-                    رفض
-                  </button>
-                </div>
+                {activeTab === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      className="btn-primary"
+                      onClick={function () {
+                        act(d.id, "approve");
+                      }}
+                    >
+                      قبول
+                    </button>
+                    <button
+                      className="py-2.5 px-4 rounded-xl border border-[var(--ember)] text-[var(--ember)] font-bold"
+                      onClick={function () {
+                        act(d.id, "reject");
+                      }}
+                    >
+                      رفض
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
-          {deposits.length === 0 && <p className="text-gray-500">لا توجد طلبات معلقة.</p>}
+          {deposits.length === 0 && <p className="text-gray-500">لا توجد طلبات في هذا القسم.</p>}
         </div>
       </div>
     </AdminGuard>
