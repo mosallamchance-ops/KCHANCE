@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { adminErrorResponse } from "@/lib/apiError";
 
 export async function POST(request) {
   try {
@@ -28,14 +29,14 @@ export async function POST(request) {
         p_deposit_id: deposit_id,
         p_admin_id: admin.id
       });
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return adminErrorResponse(error, 400, "some short label for this action");
     } else if (action === "reject") {
       const { error } = await supabaseAdmin
         .from("deposits")
         .update({ status: "rejected", rejection_reason, admin_id: admin.id })
         .eq("id", deposit_id)
         .eq("status", "pending");
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return adminErrorResponse(error, 400, "some short label for this action");
     } else {
       return NextResponse.json({ error: "إجراء غير معروف" }, { status: 400 });
     }
