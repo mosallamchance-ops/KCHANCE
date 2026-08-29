@@ -31,10 +31,12 @@ export default function AdminInsightsPage() {
       return d.logins;
     })
   );
+
   const rev = data.revenue;
   const netMargin = rev
     ? Number(rev.total_ticket_revenue) - Number(rev.total_cash_prizes_paid) - Number(rev.total_product_prizes_value)
     : 0;
+
   const f = data.funnel;
   const funnelSteps = f
     ? [
@@ -51,6 +53,7 @@ export default function AdminInsightsPage() {
     <AdminGuard>
       <div className="space-y-8">
         <h1 className="font-display text-2xl">إحصائيات ونشاط المستخدمين (للإدارة فقط)</h1>
+
         {rev && (
           <div>
             <h2 className="font-bold mb-2">الإيرادات والأرباح (كامل الفترة)</h2>
@@ -69,14 +72,18 @@ export default function AdminInsightsPage() {
               </div>
               <div className="card text-center">
                 <p className="text-xs text-gray-500">هامش الربح التقديري</p>
-                <p className={"font-display text-xl " + (netMargin >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
+                <p
+                  className={
+                    "font-display text-xl " + (netMargin >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")
+                  }
+                >
                   ${netMargin}
                 </p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              هامش الربح = إيرادات التذاكر − الجوائز النقدية المدفوعة − قيمة المنتجات الموزّعة كجوائز (لا يشمل تكاليف تشغيل
-              أخرى).
+              هامش الربح = إيرادات التذاكر − الجوائز النقدية المدفوعة − قيمة المنتجات الموزّعة كجوائز (لا يشمل تكاليف
+              تشغيل أخرى).
             </p>
           </div>
         )}
@@ -104,7 +111,9 @@ export default function AdminInsightsPage() {
                       <td className="p-2 font-mono-num">{d.sell_through_pct ?? 0}%</td>
                       <td className="p-2 font-mono-num text-[var(--emerald)]">${d.revenue}</td>
                       <td className="p-2 font-mono-num">${d.prize_value}</td>
-                      <td className="p-2 text-gray-400 text-xs">{new Date(d.created_at).toLocaleDateString("ar")}</td>
+                      <td className="p-2 text-gray-400 text-xs">
+                        {new Date(d.created_at).toLocaleDateString("ar")}
+                      </td>
                     </tr>
                   );
                 })}
@@ -114,7 +123,6 @@ export default function AdminInsightsPage() {
           </div>
         </div>
 
-        {funnelSteps.length > 0 && (
         {funnelSteps.length > 0 && (
           <div>
             <h2 className="font-bold mb-2">دورة حياة المستخدم — قمع التحويل</h2>
@@ -134,10 +142,7 @@ export default function AdminInsightsPage() {
                       </span>
                     </div>
                     <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[var(--emerald)]"
-                        style={{ width: Math.max(2, pctOfTotal) + "%" }}
-                      />
+                      <div className="h-full bg-[var(--emerald)]" style={{ width: Math.max(2, pctOfTotal) + "%" }} />
                     </div>
                   </div>
                 );
@@ -265,7 +270,7 @@ export default function AdminInsightsPage() {
                   </div>
                 );
               })}
-                        {data.topActive.filter(function (u) {
+            {data.topActive.filter(function (u) {
               return u.login_count > 0;
             }).length === 0 && <p className="text-gray-500 text-sm">لا يوجد نشاط مسجّل بعد.</p>}
           </div>
