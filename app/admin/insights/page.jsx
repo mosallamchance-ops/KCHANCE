@@ -31,7 +31,10 @@ export default function AdminInsightsPage() {
       return d.logins;
     })
   );
-
+  const rev = data.revenue;
+  const netMargin = rev
+    ? Number(rev.total_ticket_revenue) - Number(rev.total_cash_prizes_paid) - Number(rev.total_product_prizes_value)
+    : 0;
   const f = data.funnel;
   const funnelSteps = f
     ? [
