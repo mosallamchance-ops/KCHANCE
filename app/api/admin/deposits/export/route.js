@@ -38,15 +38,13 @@ export async function GET(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    const siteUrl = new URL(request.url).origin;
+
   const rows = [];
   for (const d of deposits) {
-    let receiptLink = "";
-    if (d.receipt_url) {
-      const { data: signed } = await supabaseAdmin.storage
-        .from("receipts")
-        .createSignedUrl(d.receipt_url, 60 * 60 * 24 * 7); // valid 7 days
-      receiptLink = signed?.signedUrl || "";
-    }
+    // Link points to our own admin-gated page, not a directly-usable signed URL —
+    // it only resolves to the actual image for someone currently logged in as an admin.
+    const receiptLink = d.receipt_url ? siteUrl + "/admin/deposits/receipt/" + d.id : "";
 
     rows.push({
       id: d.id,
