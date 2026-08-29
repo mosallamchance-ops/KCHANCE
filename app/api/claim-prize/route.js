@@ -17,9 +17,9 @@ export async function POST(request) {
     return NextResponse.json({ error: "بيانات غير صالحة" }, { status: 400 });
   }
 
-  const { data: winner, error: fetchErr } = await supabaseAdmin
+   const { data: winner, error: fetchErr } = await supabaseAdmin
     .from("winners")
-    .select("id, user_id, prize_type, status")
+    .select("id, user_id, prize_type, status, published")
     .eq("id", winner_id)
     .single();
 
@@ -28,6 +28,9 @@ export async function POST(request) {
   }
   if (winner.user_id !== userData.user.id) {
     return NextResponse.json({ error: "هذه ليست جائزتك" }, { status: 403 });
+  }
+    if (!winner.published) {
+    return NextResponse.json({ error: "هذه الجائزة قيد المراجعة من الإدارة" }, { status: 403 });
   }
   if (winner.status === "completed") {
     return NextResponse.json({ error: "تم تسليم هذه الجائزة بالفعل" }, { status: 400 });
