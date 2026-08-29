@@ -6,6 +6,8 @@ import AdminGuard from "@/components/AdminGuard";
 export default function AdminDepositsPage() {
   const [deposits, setDeposits] = useState([]);
   const [msg, setMsg] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   async function load() {
     const {
@@ -18,7 +20,7 @@ export default function AdminDepositsPage() {
     if (res.ok) setDeposits(result.deposits ?? []);
   }
 
-  useEffect(() => {
+  useEffect(function () {
     load();
   }, []);
 
@@ -43,11 +45,97 @@ export default function AdminDepositsPage() {
     else load();
   }
 
+  async function exportExcel() {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/deposits/export", {
+      headers: { Authorization: "Bearer " + session?.access_token }
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      setMsg(err.error);
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "deposits.xlsx";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function importExcel(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportResult(null);
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/admin/deposits/import", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + session?.access_token },
+      body: formData
+    });
+    const result = await res.json();
+    setImporting(false);
+    e.target.value = "";
+
+    if (!res.ok) {
+      setMsg(result.error);
+    } else {
+      setImportResult(result);
+      load();
+    }
+  }
+
   return (
     <AdminGuard>
       <div>
-        <h1 className="font-display text-2xl mb-4">طلبات شحن الرصيد المعلقة</h1>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h1 className="font-display text-2xl">طلبات شحن الرصيد المعلقة</h1>
+          <div className="flex gap-2 items-center">
+            <button onClick={exportExcel} className="py-2 px-4 rounded-lg border border-[var(--line)] text-sm font-bold">
+              ⬇ تصدير Excel
+            </button>
+            <label className="py-2 px-4 rounded-lg border border-[var(--line)] text-sm font-bold cursor-pointer">
+              {importing ? "...جارِ الاستيراد" : "⬆ استيراد التغييرات"}
+              <input type="file" accept=".xlsx" className="hidden" onChange={importExcel} disabled={importing} />
+            </label>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mb-4">
+          صدّر الملف، غيّر قيمة عمود "الحالة" إلى approved أو rejected للطلبات المطلوب معالجتها (اتركها كما هي لتجاهل
+          الباقي)، ثم أعد رفع الملف نفسه.
+        </p>
+
+        {importResult && (
+          <div className="card mb-4 text-sm">
+            <p className="font-bold mb-1">تمت معالجة {importResult.processed} صف.</p>
+            {importResult.results
+              .filter(function (r) {
+                return r.error;
+              })
+              .map(function (r, i) {
+                return (
+                  <p key={i} className="text-[var(--ember)] text-xs">
+                    {r.id}: {r.error}
+                  </p>
+                );
+              })}
+          </div>
+        )}
+
         {msg && <p className="text-[var(--ember)] mb-2">{msg}</p>}
+
         <div className="space-y-3">
           {deposits.map(function (d) {
             return (
