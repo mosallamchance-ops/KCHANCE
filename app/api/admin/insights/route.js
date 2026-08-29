@@ -25,6 +25,10 @@ export async function GET(request) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
+  const { searchParams } = new URL(request.url);
+  const dateFrom = searchParams.get("date_from") || null;
+  const dateTo = searchParams.get("date_to") || null;
+
   try {
     const [
       leaderboard,
@@ -39,16 +43,16 @@ export async function GET(request) {
       conversionWindows,
       walletConversion
     ] = await Promise.all([
-      supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
+      supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50, p_date_from: dateFrom, p_date_to: dateTo }),
       supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
       supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
       supabaseAdmin.rpc("funnel_stats"),
       supabaseAdmin.rpc("funnel_avg_days"),
-      supabaseAdmin.rpc("draw_performance_stats"),
-      supabaseAdmin.rpc("revenue_summary"),
+      supabaseAdmin.rpc("draw_performance_stats", { p_date_from: dateFrom, p_date_to: dateTo }),
+      supabaseAdmin.rpc("revenue_summary", { p_date_from: dateFrom, p_date_to: dateTo }),
       supabaseAdmin.rpc("province_breakdown"),
       supabaseAdmin.rpc("churned_users", { p_inactive_days: 21 }),
-      supabaseAdmin.rpc("cohort_conversion_windows"),
+      supabaseAdmin.rpc("cohort_conversion_windows", { p_date_from: dateFrom, p_date_to: dateTo }),
       supabaseAdmin.rpc("wallet_view_conversion")
     ]);
 
