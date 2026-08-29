@@ -51,7 +51,70 @@ export default function AdminInsightsPage() {
     <AdminGuard>
       <div className="space-y-8">
         <h1 className="font-display text-2xl">إحصائيات ونشاط المستخدمين (للإدارة فقط)</h1>
+        {rev && (
+          <div>
+            <h2 className="font-bold mb-2">الإيرادات والأرباح (كامل الفترة)</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">إجمالي إيرادات التذاكر</p>
+                <p className="font-display text-xl text-[var(--emerald)]">${rev.total_ticket_revenue}</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">إجمالي الجوائز النقدية المدفوعة</p>
+                <p className="font-display text-xl text-[var(--ember)]">${rev.total_cash_prizes_paid}</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">قيمة الجوائز العينية (منتجات)</p>
+                <p className="font-display text-xl text-[var(--gold-deep)]">${rev.total_product_prizes_value}</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">هامش الربح التقديري</p>
+                <p className={"font-display text-xl " + (netMargin >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
+                  ${netMargin}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              هامش الربح = إيرادات التذاكر − الجوائز النقدية المدفوعة − قيمة المنتجات الموزّعة كجوائز (لا يشمل تكاليف تشغيل
+              أخرى).
+            </p>
+          </div>
+        )}
 
+        <div>
+          <h2 className="font-bold mb-2">أداء السحوبات</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--line)] text-gray-500 text-right">
+                  <th className="p-2">المنتج</th>
+                  <th className="p-2">الحالة</th>
+                  <th className="p-2">نسبة البيع</th>
+                  <th className="p-2">الإيرادات</th>
+                  <th className="p-2">قيمة الجائزة</th>
+                  <th className="p-2">تاريخ الإنشاء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.drawPerf.map(function (d) {
+                  return (
+                    <tr key={d.draw_id} className="border-b border-[var(--line)]">
+                      <td className="p-2 font-bold">{d.product_name}</td>
+                      <td className="p-2">{d.status}</td>
+                      <td className="p-2 font-mono-num">{d.sell_through_pct ?? 0}%</td>
+                      <td className="p-2 font-mono-num text-[var(--emerald)]">${d.revenue}</td>
+                      <td className="p-2 font-mono-num">${d.prize_value}</td>
+                      <td className="p-2 text-gray-400 text-xs">{new Date(d.created_at).toLocaleDateString("ar")}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {data.drawPerf.length === 0 && <p className="text-gray-500 text-sm mt-2">لا توجد سحوبات بعد.</p>}
+          </div>
+        </div>
+
+        {funnelSteps.length > 0 && (
         {funnelSteps.length > 0 && (
           <div>
             <h2 className="font-bold mb-2">دورة حياة المستخدم — قمع التحويل</h2>
