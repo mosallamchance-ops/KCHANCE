@@ -265,9 +265,66 @@ export default function AdminInsightsPage() {
                   </div>
                 );
               })}
-            {data.topActive.filter(function (u) {
+                        {data.topActive.filter(function (u) {
               return u.login_count > 0;
             }).length === 0 && <p className="text-gray-500 text-sm">لا يوجد نشاط مسجّل بعد.</p>}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="font-bold mb-2">توزّع المستخدمين حسب المحافظة</h2>
+          <div className="space-y-2">
+            {data.provinces.map(function (p) {
+              const maxCount = Math.max(
+                1,
+                ...data.provinces.map(function (x) {
+                  return Number(x.user_count);
+                })
+              );
+              const widthPct = Math.round((Number(p.user_count) / maxCount) * 100);
+              return (
+                <div key={p.province} className="flex items-center gap-3 text-sm">
+                  <span className="w-24 flex-shrink-0">{p.province}</span>
+                  <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--gold)]" style={{ width: widthPct + "%" }} />
+                  </div>
+                  <span className="font-mono-num w-8 text-left">{p.user_count}</span>
+                </div>
+              );
+            })}
+            {data.provinces.length === 0 && <p className="text-gray-500 text-sm">لا توجد بيانات بعد.</p>}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="font-bold mb-2">مستخدمون توقفوا عن الشراء (أكثر من 21 يوماً)</h2>
+          <p className="text-xs text-gray-500 mb-2">
+            اشتروا تذاكر من قبل لكن لم يعودوا مؤخراً — فرصة جيدة للتواصل معهم وإعادة تفعيلهم.
+          </p>
+          <div className="space-y-2">
+            {data.churned.map(function (u) {
+              return (
+                <div key={u.user_id} className="card flex justify-between items-center text-sm">
+                  <div>
+                    <p className="font-bold">
+                      {u.first_name} {u.last_name}
+                    </p>
+                    <p className="text-gray-500 font-mono-num">{u.phone}</p>
+                  </div>
+                  <div className="text-left text-xs">
+                    <p className="text-gray-400">
+                      آخر شراء: {new Date(u.last_purchase_at).toLocaleDateString("ar")}
+                    </p>
+                    <p className="font-mono-num text-gray-500">
+                      {u.total_tickets} تذكرة — ${u.total_spent}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            {data.churned.length === 0 && (
+              <p className="text-gray-500 text-sm">لا يوجد مستخدمون متوقفون حالياً — نشاط جيد!</p>
+            )}
           </div>
         </div>
       </div>
