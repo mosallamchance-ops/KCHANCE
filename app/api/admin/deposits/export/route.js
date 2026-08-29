@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import * as XLSX from "xlsx";
 import { adminErrorResponse } from "@/lib/apiError";
+import * as XLSX from "xlsx";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function GET(request) {
   const authHeader = request.headers.get("authorization") || "";
@@ -25,26 +29,30 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get("status") || "pending";
+  const dateFrom = searchParams.get("date_from");
+  const dateTo = searchParams.get("date_to");
 
-  let query = supabaseAdmin
-    .from("deposits")
-    .select("id, amount, transaction_code, sender_wallet, status, rejection_reason, receipt_url, created_at, users(first_name,last_name,phone)")
-    .order("created_at", { ascending: false });
+  let filters =
+    "select=id,amount,transaction_code,sender_wallet,status,rejection_reason,receipt_url,created_at,users(first_name,last_name,phone)&order=created_at.desc";
+  if (statusFilter !== "all") filters += "&status=eq." + statusFilter;
+  if (dateFrom) filters += "&created_at=gte." + dateFrom + "T00:00:00";
+  if (dateTo) filters += "&created_at=lte." + dateTo + "T23:59:59";
 
-  if (statusFilter !== "all") {
-    query = query.eq("status", statusFilter);
+  const res = await fetch(SUPABASE_URL + "/rest/v1/deposits?" + filters, {
+    headers: { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY },
+    cache: "no-store"
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    return adminErrorResponse(new Error(errText), 500, "export deposits");
   }
 
-  const { data: deposits, error } = await query;
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    const siteUrl = new URL(request.url).origin;
+  const deposits = await res.json();
+  const siteUrl = new URL(request.url).origin;
 
   const rows = [];
   for (const d of deposits) {
-    // Link points to our own admin-gated page, not a directly-usable signed URL —
-    // it only resolves to the actual image for someone currently logged in as an admin.
     const receiptLink = d.receipt_url ? siteUrl + "/admin/deposits/receipt/" + d.id : "";
 
     rows.push({
