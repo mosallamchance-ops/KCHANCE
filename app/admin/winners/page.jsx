@@ -21,7 +21,7 @@ export default function AdminWinnersPage() {
     if (res.ok) setWinners(result.winners ?? []);
   }
 
-  useEffect(() => {
+  useEffect(function () {
     load();
   }, []);
 
@@ -33,7 +33,22 @@ export default function AdminWinnersPage() {
     const res = await fetch("/api/admin/winners", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + session?.access_token },
-      body: JSON.stringify({ winner_id: winner_id, status: status })
+      body: JSON.stringify({ winner_id, status })
+    });
+    const result = await res.json();
+    if (!res.ok) setMsg(result.error);
+    else load();
+  }
+
+  async function togglePublish(winner_id, currentlyPublished) {
+    setMsg(null);
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/winners/" + winner_id + "/publish", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + session?.access_token },
+      body: JSON.stringify({ published: !currentlyPublished })
     });
     const result = await res.json();
     if (!res.ok) setMsg(result.error);
@@ -50,7 +65,14 @@ export default function AdminWinnersPage() {
             return (
               <div key={w.id} className="card flex flex-wrap justify-between items-start gap-3 text-sm">
                 <div>
-                  <p className="font-bold">{w.draws?.products?.name}</p>
+                  <p className="font-bold">
+                    {w.draws?.products?.name}{" "}
+                    {w.published ? (
+                      <span className="text-[var(--emerald)] text-xs">● منشور</span>
+                    ) : (
+                      <span className="text-[var(--gold-deep)] text-xs">● غير منشور</span>
+                    )}
+                  </p>
                   <p className="text-gray-500">
                     {w.users?.first_name} {w.users?.last_name} — {w.users?.phone}
                   </p>
@@ -73,21 +95,36 @@ export default function AdminWinnersPage() {
                     <p className="mt-2 text-xs text-[var(--gold-deep)]">لم يرسل الفائز بيانات الاستلام بعد.</p>
                   )}
                 </div>
-                <select
-                  className="border border-[var(--line)] rounded-lg p-2"
-                  value={w.status}
-                  onChange={function (e) {
-                    updateStatus(w.id, e.target.value);
-                  }}
-                >
-                  {statusOptions.map(function (s) {
-                    return (
-                      <option key={s} value={s}>
-                        {statusAr[s]}
-                      </option>
-                    );
-                  })}
-                </select>
+                <div className="flex flex-col gap-2 items-end">
+                  <select
+                    className="border border-[var(--line)] rounded-lg p-2"
+                    value={w.status}
+                    onChange={function (e) {
+                      updateStatus(w.id, e.target.value);
+                    }}
+                  >
+                    {statusOptions.map(function (s) {
+                      return (
+                        <option key={s} value={s}>
+                          {statusAr[s]}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <button
+                    onClick={function () {
+                      togglePublish(w.id, w.published);
+                    }}
+                    className={
+                      "py-2 px-3 rounded-lg border text-xs font-bold " +
+                      (w.published
+                        ? "border-[var(--ember)] text-[var(--ember)]"
+                        : "border-[var(--emerald)] text-[var(--emerald)]")
+                    }
+                  >
+                    {w.published ? "إخفاء عن الصفحة العامة" : "✓ نشر للعامة"}
+                  </button>
+                </div>
               </div>
             );
           })}
