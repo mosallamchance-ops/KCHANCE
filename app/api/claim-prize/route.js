@@ -53,8 +53,11 @@ export async function POST(request) {
     updates.claim_phone = phone || null;
   }
 
-  const { error } = await supabaseAdmin.from("winners").update(updates).eq("id", winner_id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    const { error } = await supabaseAdmin.from("winners").update(updates).eq("id", winner_id);
+  if (error) {
+    console.error("claim-prize update failed:", error.message); // full detail stays in your server logs only
+    return NextResponse.json({ error: "حدث خطأ أثناء حفظ بيانات الاستلام، حاول مرة أخرى." }, { status: 500 });
+  }
 
   if (winner.status === "pending") {
     await supabaseAdmin.from("winners").update({ status: "verified" }).eq("id", winner_id);
