@@ -54,7 +54,7 @@ export default function AdminDrawsListPage() {
         <div className="space-y-2">
           {draws.map(function (d) {
             return (
-              <div key={d.id} className="card flex justify-between items-center text-sm">
+              <div key={d.id} className="card flex flex-wrap justify-between items-center gap-3 text-sm">
                 <div>
                   <p className="font-bold">
                     {d.pinned && <span className="text-[var(--gold-deep)]">⭐ </span>}
@@ -65,7 +65,7 @@ export default function AdminDrawsListPage() {
                     <span className={statusColor[d.status]}>{statusAr[d.status]}</span>
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={function () {
                       togglePin(d.id, d.pinned);
@@ -79,6 +79,12 @@ export default function AdminDrawsListPage() {
                   >
                     {d.pinned ? "إلغاء التثبيت" : "⭐ تثبيت"}
                   </button>
+                  <Link
+                    href={"/admin/draws/new?repeat=" + d.id}
+                    className="py-2 px-3 rounded-lg border border-[var(--emerald)] text-[var(--emerald)] text-xs font-bold"
+                  >
+                    ↻ تكرار
+                  </Link>
                   {d.sold_tickets === 0 ? (
                     <Link
                       href={"/admin/draws/" + d.id + "/edit"}
