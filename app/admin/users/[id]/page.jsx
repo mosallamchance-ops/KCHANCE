@@ -150,7 +150,7 @@ export default function AdminUserDetailPage() {
                 {user.status === "active" ? "نشط" : "معلّق"}
               </span>
             </p>
-            <div className="pt-2 border-t mt-2 text-gray-400 text-xs space-y-1">
+                        <div className="pt-2 border-t mt-2 text-gray-400 text-xs space-y-1">
               <p>
                 تاريخ إنشاء الحساب:{" "}
                 {user.auth_created_at ? new Date(user.auth_created_at).toLocaleString("ar") : "—"}
@@ -163,6 +163,21 @@ export default function AdminUserDetailPage() {
                 آخر تحديث للملف الشخصي:{" "}
                 {user.updated_at ? new Date(user.updated_at).toLocaleString("ar") : "—"}
               </p>
+            </div>
+
+            <div className="pt-2 border-t mt-2 space-y-1 text-xs">
+              <p className="font-bold text-[var(--ink)]">دورة حياة المستخدم:</p>
+              <p className="text-gray-500">
+                أول شحن رصيد: {lifecycle.firstDepositDate ? lifecycle.firstDepositDate.toLocaleDateString("ar") : "لم يشحن بعد"}
+              </p>
+              <p className="text-gray-500">
+                أول شراء تذكرة:{" "}
+                {lifecycle.firstPurchaseDate ? lifecycle.firstPurchaseDate.toLocaleDateString("ar") : "لم يشترِ بعد"}
+              </p>
+              <p className="text-gray-500 font-mono-num">إجمالي المشحون: ${lifecycle.totalDeposited}</p>
+              <p className="text-gray-500 font-mono-num">إجمالي المصروف على تذاكر: ${lifecycle.totalSpent}</p>
+              <p className="text-gray-500 font-mono-num">عدد عمليات الشراء: {lifecycle.purchaseCount}</p>
+              <p className="text-gray-500 font-mono-num">عدد مرات الفوز: {lifecycle.winCount}</p>
             </div>
           </div>
           <button
