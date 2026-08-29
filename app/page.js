@@ -7,8 +7,11 @@ export const revalidate = 0;
 export default async function HomePage() {
   const { data: draws, error } = await supabaseAdmin
     .from("draws")
-    .select("id, ticket_price, total_tickets, sold_tickets, end_at, status, products(name, image_url, product_value)")
+    .select(
+      "id, ticket_price, total_tickets, sold_tickets, end_at, status, pinned, products(name, image_url, product_value)"
+    )
     .eq("status", "active")
+    .order("pinned", { ascending: false })
     .order("end_at", { ascending: true });
 
   if (error) {
@@ -30,12 +33,17 @@ export default async function HomePage() {
       <h2 className="font-display text-2xl text-[var(--ink)] mb-4">السحوبات النشطة</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {draws?.map((draw) => {
+        {draws?.map(function (draw) {
           const remaining = draw.total_tickets - draw.sold_tickets;
           const soldPct = Math.min(100, Math.round((draw.sold_tickets / draw.total_tickets) * 100));
 
           return (
-            <Link key={draw.id} href={`/draws/${draw.id}`} className="ticket-card">
+            <Link key={draw.id} href={"/draws/" + draw.id} className="ticket-card relative">
+              {draw.pinned && (
+                <span className="absolute top-2 right-2 z-10 bg-[var(--gold)] text-[var(--ink)] text-xs font-bold px-2 py-1 rounded-lg">
+                  ⭐ مميز
+                </span>
+              )}
               <div className="aspect-video bg-gray-100 overflow-hidden">
                 {draw.products?.image_url && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -57,7 +65,7 @@ export default async function HomePage() {
                 <p className="font-display text-xl text-[var(--emerald)]">${draw.products?.product_value}</p>
 
                 <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--gold)]" style={{ width: `${soldPct}%` }} />
+                  <div className="h-full bg-[var(--gold)]" style={{ width: soldPct + "%" }} />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {draw.sold_tickets} / {draw.total_tickets} تذكرة — {remaining} متبقية
