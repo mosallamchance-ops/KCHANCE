@@ -69,7 +69,40 @@ export default function AdminUserDetailPage() {
   if (msg) return <p className="text-red-600">{msg}</p>;
   if (!data) return <p className="text-gray-500">...جارِ التحميل</p>;
 
-  const { user, tickets, transactions, winners, loginEvents, relatedAccounts } = data;
+    function computeLifecycle() {
+    const deposits = transactions.filter(function (t) {
+      return t.type === "deposit";
+    });
+    const purchases = transactions.filter(function (t) {
+      return t.type === "purchase";
+    });
+    const firstDeposit = deposits.length
+      ? deposits.reduce(function (a, b) {
+          return new Date(a.created_at) < new Date(b.created_at) ? a : b;
+        })
+      : null;
+    const firstPurchase = purchases.length
+      ? purchases.reduce(function (a, b) {
+          return new Date(a.created_at) < new Date(b.created_at) ? a : b;
+        })
+      : null;
+    const totalDeposited = deposits.reduce(function (s, t) {
+      return s + Number(t.amount);
+    }, 0);
+    const totalSpent = purchases.reduce(function (s, t) {
+      return s + Math.abs(Number(t.amount));
+    }, 0);
+
+    return {
+      firstDepositDate: firstDeposit ? new Date(firstDeposit.created_at) : null,
+      firstPurchaseDate: firstPurchase ? new Date(firstPurchase.created_at) : null,
+      totalDeposited,
+      totalSpent,
+      purchaseCount: purchases.length,
+      winCount: winners.length
+    };
+  }
+  const lifecycle = computeLifecycle();
 
   function parseDevice(ua) {
     if (!ua) return "غير معروف";
