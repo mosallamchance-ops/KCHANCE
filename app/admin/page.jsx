@@ -25,6 +25,7 @@ const actionLinks = [
   { href: "/admin/admins", label: "المشرفون" },
   { href: "/admin/winners", label: "الفائزون والجوائز" },
   { href: "/admin/support", label: "تذاكر الدعم" },
+  { href: "/admin/insights", label: "الإحصائيات والنشاط" }
 ];
 
 export default function AdminDashboardPage() {
@@ -32,13 +33,13 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
+  useEffect(function () {
     async function load() {
       const {
         data: { session }
       } = await supabase.auth.getSession();
       const res = await fetch("/api/admin/stats", {
-        headers: { Authorization: `Bearer ${session?.access_token}` }
+        headers: { Authorization: "Bearer " + session?.access_token }
       });
       const result = await res.json();
       if (!res.ok) setError(result.error);
@@ -51,12 +52,12 @@ export default function AdminDashboardPage() {
     <AdminGuard>
       <div>
         <div className="flex items-center justify-between mb-4 relative">
-          <h1 className="text-xl font-bold">لوحة تحكم الإدارة</h1>
+          <h1 className="font-display text-2xl">لوحة تحكم الإدارة</h1>
 
           {/* Desktop: full row of links */}
           <div className="hidden md:flex gap-3 text-sm flex-wrap">
-            {actionLinks.map((l) =>
-              l.primary ? (
+            {actionLinks.map(function (l) {
+              return l.primary ? (
                 <Link key={l.href} href={l.href} className="btn-primary">
                   {l.label}
                 </Link>
@@ -64,14 +65,18 @@ export default function AdminDashboardPage() {
                 <Link key={l.href} href={l.href} className="py-2 px-4 rounded-lg border border-[var(--line)]">
                   {l.label}
                 </Link>
-              )
-            )}
+              );
+            })}
           </div>
 
           {/* Mobile: hamburger menu */}
           <div className="md:hidden">
             <button
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={function () {
+                setMenuOpen(function (o) {
+                  return !o;
+                });
+              }}
               aria-label="القائمة"
               className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-[var(--line)]"
             >
@@ -91,16 +96,24 @@ export default function AdminDashboardPage() {
 
             {menuOpen && (
               <div className="absolute top-full left-0 mt-2 bg-[var(--card)] border border-[var(--line)] rounded-2xl p-3 flex flex-col gap-2 text-sm font-bold shadow-lg z-30 w-56">
-                {actionLinks.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={() => setMenuOpen(false)}
-                    className={l.primary ? "btn-primary text-center" : "py-2 px-3 rounded-lg border border-[var(--line)] text-center"}
-                  >
-                    {l.label}
-                  </Link>
-                ))}
+                {actionLinks.map(function (l) {
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={function () {
+                        setMenuOpen(false);
+                      }}
+                      className={
+                        l.primary
+                          ? "btn-primary text-center"
+                          : "py-2 px-3 rounded-lg border border-[var(--line)] text-center"
+                      }
+                    >
+                      {l.label}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -110,15 +123,17 @@ export default function AdminDashboardPage() {
 
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {cards.map((c) => (
-              <div key={c.key} className="card">
-                <p className="text-xs text-gray-500">{c.label}</p>
-                <p className="font-display text-2xl text-[var(--emerald)]">
-                  {c.money ? "$" : ""}
-                  {stats[c.key]}
-                </p>
-              </div>
-            ))}
+            {cards.map(function (c) {
+              return (
+                <div key={c.key} className="card">
+                  <p className="text-xs text-gray-500">{c.label}</p>
+                  <p className="font-display text-2xl text-[var(--emerald)]">
+                    {c.money ? "$" : ""}
+                    {stats[c.key]}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
