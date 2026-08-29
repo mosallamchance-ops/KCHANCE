@@ -33,8 +33,21 @@ export default function WalletPage() {
     setTxns(transactions ?? []);
   }
 
-  useEffect(() => {
+  useEffect(function () {
     loadData();
+
+    async function logView() {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      fetch("/api/log-pageview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token },
+        body: JSON.stringify({ page: "wallet" })
+      }).catch(function () {});
+    }
+    logView();
   }, []);
 
   async function submitDeposit(e) {
