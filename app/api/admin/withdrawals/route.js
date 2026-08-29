@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { adminErrorResponse } from "@/lib/apiError";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export async function POST(request) {
     p_rejection_reason: rejection_reason || null
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return adminErrorResponse(error, 400, "some short label for this action");
 
   await supabaseAdmin.from("audit_logs").insert({
     admin_id: admin.id,
