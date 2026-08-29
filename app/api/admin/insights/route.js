@@ -26,21 +26,27 @@ export async function GET(request) {
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
   try {
-    const [leaderboard, dailyStats, topActive] = await Promise.all([
+    const [leaderboard, dailyStats, topActive, funnel, funnelDays] = await Promise.all([
       supabaseAdmin.rpc("leaderboard_top_buyers", { p_limit: 50 }),
       supabaseAdmin.rpc("activity_daily_stats", { p_days: 14 }),
-      supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 })
+      supabaseAdmin.rpc("activity_top_active_users", { p_days: 30, p_limit: 20 }),
+      supabaseAdmin.rpc("funnel_stats"),
+      supabaseAdmin.rpc("funnel_avg_days")
     ]);
 
     if (leaderboard.error) return adminErrorResponse(leaderboard.error, 500, "insights: leaderboard");
     if (dailyStats.error) return adminErrorResponse(dailyStats.error, 500, "insights: daily stats");
     if (topActive.error) return adminErrorResponse(topActive.error, 500, "insights: top active users");
+    if (funnel.error) return adminErrorResponse(funnel.error, 500, "insights: funnel");
+    if (funnelDays.error) return adminErrorResponse(funnelDays.error, 500, "insights: funnel days");
 
     return NextResponse.json(
       {
         leaderboard: leaderboard.data,
         dailyStats: dailyStats.data,
-        topActive: topActive.data
+        topActive: topActive.data,
+        funnel: funnel.data?.[0] ?? null,
+        funnelDays: funnelDays.data?.[0] ?? null
       },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
