@@ -5,22 +5,61 @@ import AdminGuard from "@/components/AdminGuard";
 
 export default function AdminInsightsPage() {
   const [data, setData] = useState(null);
+    const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [error, setError] = useState(null);
 
-  useEffect(function () {
-    async function load() {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-      const res = await fetch("/api/admin/insights", {
-        headers: { Authorization: "Bearer " + session?.access_token }
-      });
-      const result = await res.json();
-      if (res.ok) setData(result);
-      else setError(result.error);
+   async function loadInsights() {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    let url = "/api/admin/insights";
+    const params = [];
+    if (dateFrom) params.push("date_from=" + dateFrom);
+    if (dateTo) params.push("date_to=" + dateTo);
+    if (params.length) url += "?" + params.join("&");
+
+    const res = await fetch(url, {
+      headers: { Authorization: "Bearer " + session?.access_token }
+    });
+    const result = await res.json();
+    if (res.ok) setData(result);
+    else setError(result.error);
+  }
+
+  useEffect(
+    function () {
+      loadInsights();
+    },
+    [dateFrom, dateTo]
+  );
+
+  async function exportRawData() {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    let url = "/api/admin/insights/export";
+    const params = [];
+    if (dateFrom) params.push("date_from=" + dateFrom);
+    if (dateTo) params.push("date_to=" + dateTo);
+    if (params.length) url += "?" + params.join("&");
+
+    const res = await fetch(url, {
+      headers: { Authorization: "Bearer " + session?.access_token }
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      setError(err.error);
+      return;
     }
-    load();
-  }, []);
+    const blob = await res.blob();
+    const objUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objUrl;
+    a.download = "raw-data-export.xlsx";
+    a.click();
+    window.URL.revokeObjectURL(objUrl);
+  }
 
   if (error) return <p className="text-[var(--ember)]">{error}</p>;
   if (!data) return <p className="text-gray-500">...جارِ التحميل</p>;
@@ -52,7 +91,51 @@ export default function AdminInsightsPage() {
   return (
     <AdminGuard>
       <div className="space-y-8">
-        <h1 className="font-display text-2xl">إحصائيات ونشاط المستخدمين (للإدارة فقط)</h1>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="font-display text-2xl">إحصائيات ونشاط المستخدمين (للإدارة فقط)</h1>
+          <div className="flex flex-wrap gap-2 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">من تاريخ</label>
+              <input
+                type="date"
+                className="border border-[var(--line)] rounded-lg p-2 text-sm"
+                value={dateFrom}
+                onChange={function (e) {
+                  setDateFrom(e.target.value);
+                }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">إلى تاريخ</label>
+              <input
+                type="date"
+                className="border border-[var(--line)] rounded-lg p-2 text-sm"
+                value={dateTo}
+                onChange={function (e) {
+                  setDateTo(e.target.value);
+                }}
+              />
+            </div>
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={function () {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className="text-sm text-gray-500 underline pb-2"
+              >
+                مسح التاريخ
+              </button>
+            )}
+            <button onClick={exportRawData} className="py-2 px-4 rounded-lg border border-[var(--line)] text-sm font-bold">
+              ⬇ تصدير البيانات الخام
+            </button>
+          </div>
+        </div>
+        <p className="text-xs text-gray-400 -mt-6">
+          يطبَّق نطاق التاريخ على: الإيرادات، أداء السحوبات، قائمة الأكثر شراءً، ونسب التحويل. النشاط اليومي وقائمة
+          الأكثر نشاطاً تبقى ثابتة على آخر 14/30 يوماً.
+        </p>
 
         {rev && (
           <div>
