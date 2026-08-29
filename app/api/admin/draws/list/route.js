@@ -23,7 +23,7 @@ export async function GET(request) {
 
   const { data, error } = await supabaseAdmin
     .from("draws")
-    .select("id, status, ticket_price, total_tickets, sold_tickets, end_at, products(name, image_url)")
+    .select("id, status, ticket_price, total_tickets, sold_tickets, end_at, pinned, products(name, image_url)")
     .order("created_at", { ascending: false });
 
   if (error) return adminErrorResponse(error, 500, "some short label for this action");
