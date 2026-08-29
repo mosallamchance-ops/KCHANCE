@@ -66,8 +66,20 @@ export async function GET(request, { params }) {
     const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(id);
     const authUser = authUserData?.user;
 
+        function isValidIp(ip) {
+      if (!ip) return false;
+      const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/;
+      const ipv6 = /^[0-9a-fA-F:]+$/;
+      if (ipv4.test(ip)) {
+        return ip.split(".").every(function (part) {
+          return Number(part) >= 0 && Number(part) <= 255;
+        });
+      }
+      return ipv6.test(ip) && ip.includes(":");
+    }
+
     let relatedAccounts = [];
-    const ips = [...new Set((loginEvents ?? []).map((e) => e.ip_address).filter(Boolean))];
+    const ips = [...new Set((loginEvents ?? []).map((e) => e.ip_address).filter(isValidIp))];
     const agents = [...new Set((loginEvents ?? []).map((e) => e.user_agent).filter(Boolean))];
 
     if (ips.length > 0 || agents.length > 0) {
