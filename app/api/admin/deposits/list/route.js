@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { adminErrorResponse } from "@/lib/apiError";
 
 export const dynamic = "force-dynamic";
 
