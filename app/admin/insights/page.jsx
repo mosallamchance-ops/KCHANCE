@@ -88,6 +88,51 @@ export default function AdminInsightsPage() {
           </div>
         )}
 
+        {data.walletConversion && (
+          <div>
+            <h2 className="font-bold mb-2">تحويل صفحة شحن الرصيد</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">زاروا صفحة الشحن</p>
+                <p className="font-display text-xl text-[var(--ink)]">{data.walletConversion.total_viewers}</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">شحنوا فعلياً</p>
+                <p className="font-display text-xl text-[var(--emerald)]">{data.walletConversion.total_who_deposited}</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-xs text-gray-500">نسبة التحويل</p>
+                <p className="font-display text-xl text-[var(--gold-deep)]">
+                  {data.walletConversion.conversion_pct ?? 0}%
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              يبدأ التسجيل من هذا التحديث فصاعداً — الأرقام ستصبح أدق مع مرور الوقت.
+            </p>
+          </div>
+        )}
+
+        {data.conversionWindows && data.conversionWindows.length > 0 && (
+          <div>
+            <h2 className="font-bold mb-2">التحويل حسب المدة منذ التسجيل (D0 / D3 / D7 / D30)</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {data.conversionWindows.map(function (w) {
+                return (
+                  <div key={w.window_label} className="card text-center">
+                    <p className="text-xs text-gray-500">{w.window_label}</p>
+                    <p className="font-display text-xl text-[var(--emerald)]">{w.conversion_pct ?? 0}%</p>
+                    <p className="text-xs text-gray-400 font-mono-num">
+                      {w.converted_users} / {w.total_users}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-2">نسبة المستخدمين الذين شحنوا رصيدهم خلال كل مدة من تاريخ التسجيل.</p>
+          </div>
+        )}
+        
         <div>
           <h2 className="font-bold mb-2">أداء السحوبات</h2>
           <div className="overflow-x-auto">
