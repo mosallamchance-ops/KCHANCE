@@ -25,14 +25,77 @@ export default function AdminInsightsPage() {
   if (error) return <p className="text-[var(--ember)]">{error}</p>;
   if (!data) return <p className="text-gray-500">...جارِ التحميل</p>;
 
-  const maxLogins = Math.max(1, ...data.dailyStats.map(function (d) {
-    return d.logins;
-  }));
+  const maxLogins = Math.max(
+    1,
+    ...data.dailyStats.map(function (d) {
+      return d.logins;
+    })
+  );
+
+  const f = data.funnel;
+  const funnelSteps = f
+    ? [
+        { label: "التسجيل", count: Number(f.total_signups) },
+        { label: "تأكيد البريد", count: Number(f.confirmed_email) },
+        { label: "شحن رصيد", count: Number(f.made_deposit) },
+        { label: "شراء تذكرة", count: Number(f.bought_ticket) },
+        { label: "شراء متكرر", count: Number(f.repeat_buyer) },
+        { label: "فاز بجائزة", count: Number(f.won_prize) }
+      ]
+    : [];
 
   return (
     <AdminGuard>
       <div className="space-y-8">
         <h1 className="font-display text-2xl">إحصائيات ونشاط المستخدمين (للإدارة فقط)</h1>
+
+        {funnelSteps.length > 0 && (
+          <div>
+            <h2 className="font-bold mb-2">دورة حياة المستخدم — قمع التحويل</h2>
+            <div className="card space-y-2">
+              {funnelSteps.map(function (step, i) {
+                const total = funnelSteps[0].count || 1;
+                const pctOfTotal = Math.round((step.count / total) * 100);
+                const prevCount = i > 0 ? funnelSteps[i - 1].count : step.count;
+                const pctOfPrev = prevCount > 0 ? Math.round((step.count / prevCount) * 100) : 0;
+
+                return (
+                  <div key={step.label}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-bold">{step.label}</span>
+                      <span className="font-mono-num">
+                        {step.count} ({pctOfTotal}% من الكل{i > 0 ? " — " + pctOfPrev + "% من الخطوة السابقة" : ""})
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[var(--emerald)]"
+                        style={{ width: Math.max(2, pctOfTotal) + "%" }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {data.funnelDays && (
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="card text-center">
+                  <p className="text-xs text-gray-500">متوسط الأيام حتى أول شحن</p>
+                  <p className="font-display text-xl text-[var(--emerald)]">
+                    {data.funnelDays.avg_days_to_first_deposit ?? "—"} يوم
+                  </p>
+                </div>
+                <div className="card text-center">
+                  <p className="text-xs text-gray-500">متوسط الأيام حتى أول شراء تذكرة</p>
+                  <p className="font-display text-xl text-[var(--emerald)]">
+                    {data.funnelDays.avg_days_to_first_purchase ?? "—"} يوم
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div>
           <h2 className="font-bold mb-2">نشاط آخر 14 يوماً</h2>
@@ -42,10 +105,7 @@ export default function AdminInsightsPage() {
                 const heightPct = Math.max(4, Math.round((d.logins / maxLogins) * 100));
                 return (
                   <div key={d.day} className="flex-1 flex flex-col items-center justify-end h-full" title={d.day}>
-                    <div
-                      className="w-full bg-[var(--emerald)] rounded-t"
-                      style={{ height: heightPct + "%" }}
-                    />
+                    <div className="w-full bg-[var(--emerald)] rounded-t" style={{ height: heightPct + "%" }} />
                   </div>
                 );
               })}
