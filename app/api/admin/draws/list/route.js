@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { adminErrorResponse } from "@/lib/apiError";
-import { adminErrorResponse } from "@/lib/apiError";
+
 export const dynamic = "force-dynamic";
 export async function GET(request) {
   const authHeader = request.headers.get("authorization") || "";
@@ -26,7 +26,7 @@ export async function GET(request) {
     .select("id, status, ticket_price, total_tickets, sold_tickets, end_at, products(name, image_url)")
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return adminErrorResponse(error, 500, "some short label for this action");
 
   return NextResponse.json({ draws: data });
 }
