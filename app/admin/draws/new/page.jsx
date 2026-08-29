@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import FileUpload from "@/components/FileUpload";
@@ -17,7 +17,7 @@ const empty = {
   end_at: ""
 };
 
-export default function AdminCreateDrawPage() {
+function CreateDrawForm() {
   const searchParams = useSearchParams();
   const repeatId = searchParams.get("repeat");
 
@@ -95,121 +95,125 @@ export default function AdminCreateDrawPage() {
   }
 
   if (prefilling) {
-    return (
-      <AdminGuard>
-        <p className="text-gray-500">...جارِ تحميل بيانات السحب السابق</p>
-      </AdminGuard>
-    );
+    return <p className="text-gray-500">...جارِ تحميل بيانات السحب السابق</p>;
   }
 
   return (
+    <div className="max-w-lg mx-auto card">
+      <h1 className="font-display text-2xl mb-4">{repeatId ? "تكرار السحب" : "إضافة سحب جديد"}</h1>
+      {repeatId && (
+        <p className="text-sm text-[var(--emerald)] bg-[var(--paper)] rounded-lg p-2 mb-3">
+          تم نسخ بيانات المنتج من السحب السابق. عدّل ما تحتاجه وحدد تواريخ جديدة.
+        </p>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          placeholder="اسم المنتج"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.name}
+          onChange={function (e) {
+            update("name", e.target.value);
+          }}
+          required
+        />
+        <textarea
+          placeholder="وصف المنتج"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.description}
+          onChange={function (e) {
+            update("description", e.target.value);
+          }}
+        />
+        <FileUpload
+          bucket="product-images"
+          label="صورة المنتج"
+          viaServerEndpoint="/api/admin/upload-image"
+          onUploaded={function (url) {
+            update("image_url", url);
+          }}
+        />
+        {form.image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={form.image_url} alt="" className="h-24 rounded-lg object-cover" />
+        )}
+        <input
+          type="number"
+          placeholder="قيمة المنتج ($)"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.product_value}
+          onChange={function (e) {
+            update("product_value", e.target.value);
+          }}
+          required
+        />
+        <input
+          type="number"
+          placeholder="سعر التذكرة ($)"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.ticket_price}
+          onChange={function (e) {
+            update("ticket_price", e.target.value);
+          }}
+          required
+        />
+        <input
+          type="number"
+          placeholder="العدد الإجمالي للتذاكر"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.total_tickets}
+          onChange={function (e) {
+            update("total_tickets", e.target.value);
+          }}
+          required
+        />
+        <input
+          type="number"
+          placeholder="الحد الأقصى للتذاكر لكل مستخدم"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.max_tickets_per_user}
+          onChange={function (e) {
+            update("max_tickets_per_user", e.target.value);
+          }}
+        />
+        <label className="block text-sm text-gray-500">تاريخ ووقت بداية السحب</label>
+        <input
+          type="datetime-local"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.start_at}
+          onChange={function (e) {
+            update("start_at", e.target.value);
+          }}
+          required
+        />
+        <label className="block text-sm text-gray-500">تاريخ ووقت نهاية السحب</label>
+        <input
+          type="datetime-local"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={form.end_at}
+          onChange={function (e) {
+            update("end_at", e.target.value);
+          }}
+          required
+        />
+        <button disabled={loading} className="btn-primary w-full">
+          {loading ? "...جارِ الإنشاء" : repeatId ? "إنشاء السحب المكرر" : "إنشاء السحب"}
+        </button>
+      </form>
+      {msg && (
+        <p className={"mt-3 font-bold " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+          {msg.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function AdminCreateDrawPage() {
+  return (
     <AdminGuard>
-      <div className="max-w-lg mx-auto card">
-        <h1 className="font-display text-2xl mb-4">{repeatId ? "تكرار السحب" : "إضافة سحب جديد"}</h1>
-        {repeatId && (
-          <p className="text-sm text-[var(--emerald)] bg-[var(--paper)] rounded-lg p-2 mb-3">
-            تم نسخ بيانات المنتج من السحب السابق. عدّل ما تحتاجه وحدد تواريخ جديدة.
-          </p>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            placeholder="اسم المنتج"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.name}
-            onChange={function (e) {
-              update("name", e.target.value);
-            }}
-            required
-          />
-          <textarea
-            placeholder="وصف المنتج"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.description}
-            onChange={function (e) {
-              update("description", e.target.value);
-            }}
-          />
-          <FileUpload
-            bucket="product-images"
-            label="صورة المنتج"
-            viaServerEndpoint="/api/admin/upload-image"
-            onUploaded={function (url) {
-              update("image_url", url);
-            }}
-          />
-          {form.image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={form.image_url} alt="" className="h-24 rounded-lg object-cover" />
-          )}
-          <input
-            type="number"
-            placeholder="قيمة المنتج ($)"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.product_value}
-            onChange={function (e) {
-              update("product_value", e.target.value);
-            }}
-            required
-          />
-          <input
-            type="number"
-            placeholder="سعر التذكرة ($)"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.ticket_price}
-            onChange={function (e) {
-              update("ticket_price", e.target.value);
-            }}
-            required
-          />
-          <input
-            type="number"
-            placeholder="العدد الإجمالي للتذاكر"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.total_tickets}
-            onChange={function (e) {
-              update("total_tickets", e.target.value);
-            }}
-            required
-          />
-          <input
-            type="number"
-            placeholder="الحد الأقصى للتذاكر لكل مستخدم"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.max_tickets_per_user}
-            onChange={function (e) {
-              update("max_tickets_per_user", e.target.value);
-            }}
-          />
-          <label className="block text-sm text-gray-500">تاريخ ووقت بداية السحب</label>
-          <input
-            type="datetime-local"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.start_at}
-            onChange={function (e) {
-              update("start_at", e.target.value);
-            }}
-            required
-          />
-          <label className="block text-sm text-gray-500">تاريخ ووقت نهاية السحب</label>
-          <input
-            type="datetime-local"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={form.end_at}
-            onChange={function (e) {
-              update("end_at", e.target.value);
-            }}
-            required
-          />
-          <button disabled={loading} className="btn-primary w-full">
-            {loading ? "...جارِ الإنشاء" : repeatId ? "إنشاء السحب المكرر" : "إنشاء السحب"}
-          </button>
-        </form>
-        {msg && (
-          <p className={"mt-3 font-bold " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
-            {msg.text}
-          </p>
-        )}
-      </div>
+      <Suspense fallback={<p className="text-gray-500">...جارِ التحميل</p>}>
+        <CreateDrawForm />
+      </Suspense>
     </AdminGuard>
   );
 }
