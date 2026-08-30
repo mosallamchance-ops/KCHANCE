@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function ResultsPage() {
   const { data: results, error } = await supabaseAdmin.from("public_results").select("*").limit(50);
