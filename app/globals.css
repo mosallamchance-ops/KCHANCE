@@ -118,6 +118,132 @@ body {
   left: -10px;
 }
 
+/* ---------- Verified / status badges ---------- */
+.badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background-color: rgba(14, 107, 74, 0.1);
+  color: var(--emerald-deep);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.5rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+.badge-pill.pending {
+  background-color: rgba(14, 107, 74, 0.08);
+  color: #2563eb;
+  background-color: rgba(37, 99, 235, 0.1);
+}
+.badge-pill.done {
+  background-color: rgba(14, 107, 74, 0.1);
+  color: var(--emerald-deep);
+}
+
+/* ---------- Ticket number chip ---------- */
+.ticket-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.5rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.95rem;
+  direction: ltr;
+}
+
+/* ---------- Balance / hero card ---------- */
+.balance-card {
+  background: linear-gradient(155deg, var(--emerald) 0%, var(--emerald-deep) 100%);
+  color: #fff;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+}
+
+/* ---------- Small stat box ---------- */
+.stat-box {
+  background-color: var(--paper);
+  border-radius: 0.85rem;
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+}
+
+/* ---------- Avatar circle ---------- */
+.avatar-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0e3c8;
+  color: var(--gold-deep);
+  border-radius: 999px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ---------- Section list group (account page) ---------- */
+.settings-group {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  transition: background-color 0.15s ease;
+}
+.settings-row:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+}
+.settings-row:hover {
+  background-color: var(--paper);
+}
+
+/* ---------- Bottom tab bar (mobile) ---------- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background-color: var(--card);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  flex: 1;
+  padding: 0.5rem 0.25rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #9a9a90;
+  transition: color 0.15s ease;
+}
+.bottom-nav-item.active {
+  color: var(--emerald);
+}
+
 /* ---------- Odometer-style countdown digits ---------- */
 .odometer-box {
   font-family: "IBM Plex Mono", monospace;
