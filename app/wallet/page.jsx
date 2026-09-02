@@ -5,6 +5,7 @@ import FileUpload from "@/components/FileUpload";
 
 const WALLET_NAME = "USDT (TRC20) - يُحدَّث من الإدارة";
 const WALLET_ADDRESS = "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+const SHAM_CASH_ADDRESS = "e5412852e157a39b1eed9280c24054e9";
 
 export default function WalletPage() {
   const [balance, setBalance] = useState(0);
@@ -15,6 +16,16 @@ export default function WalletPage() {
   const [receiptPath, setReceiptPath] = useState(null);
   const [userId, setUserId] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyShamCashAddress() {
+    navigator.clipboard.writeText(SHAM_CASH_ADDRESS).then(function () {
+      setCopied(true);
+      setTimeout(function () {
+        setCopied(false);
+      }, 2000);
+    });
+  }
 
   async function loadData() {
     const {
@@ -94,6 +105,34 @@ export default function WalletPage() {
           <p className="text-sm break-all font-mono-num">رقم المحفظة: {WALLET_ADDRESS}</p>
           <p className="text-xs text-gray-500 mt-2">
             حوّل المبلغ إلى المحفظة أعلاه، ثم أرسل طلب شحن الرصيد بالتفاصيل أدناه.
+          </p>
+        </div>
+
+        <div className="card mt-4">
+          <h2 className="font-bold mb-3">الدفع عبر Sham Cash</h2>
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/sham-cash-qr.jpeg"
+              alt="رمز Sham Cash"
+              className="w-28 h-28 rounded-xl border border-[var(--line)] object-cover flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500 mb-1">امسح الرمز من تطبيق Sham Cash، أو انسخ العنوان يدوياً:</p>
+              <p className="text-sm break-all font-mono-num" dir="ltr">
+                {SHAM_CASH_ADDRESS}
+              </p>
+              <button
+                type="button"
+                onClick={copyShamCashAddress}
+                className="mt-2 text-xs font-bold text-[var(--emerald)]"
+              >
+                {copied ? "تم النسخ ✓" : "نسخ العنوان"}
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            بعد التحويل، أرسل طلب شحن الرصيد بالتفاصيل أدناه مع صورة الإيصال.
           </p>
         </div>
 
