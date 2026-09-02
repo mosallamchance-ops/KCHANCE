@@ -16,12 +16,12 @@ export async function POST(request) {
     }
     const userId = userData.user.id;
 
-    const { draw_id, ticket_slots } = await request.json();
+    const { draw_id, ticket_numbers } = await request.json();
 
-    if (!draw_id || !Array.isArray(ticket_slots) || ticket_slots.length < 1 || ticket_slots.length > 20) {
+    if (!draw_id || !Array.isArray(ticket_numbers) || ticket_numbers.length < 1 || ticket_numbers.length > 20) {
       return NextResponse.json({ error: "اختيار غير صالح" }, { status: 400 });
     }
-    if (!ticket_slots.every(function (n) { return Number.isInteger(n) && n > 0; })) {
+    if (!ticket_numbers.every(function (n) { return Number.isInteger(n) && n > 0; })) {
       return NextResponse.json({ error: "أرقام تذاكر غير صالحة" }, { status: 400 });
     }
 
@@ -29,7 +29,7 @@ export async function POST(request) {
     const { data, error } = await supabaseAdmin.rpc("purchase_selected_tickets", {
       p_user_id: userId,
       p_draw_id: draw_id,
-      p_ticket_slots: ticket_slots
+      p_display_numbers: ticket_numbers
     });
 
     if (error) {
