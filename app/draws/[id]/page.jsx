@@ -13,7 +13,7 @@ import {
   BellIcon
 } from "@/components/icons";
 
-const PAGE_SIZE = 40; // 4 columns x 10 rows, matches the mockup's grid density
+const SUGGESTION_COUNT = 9;
 
 function formatSyp(n) {
   return new Intl.NumberFormat("ar").format(Math.round(n || 0));
@@ -37,13 +37,13 @@ export default function DrawDetailPage() {
   const [balance, setBalance] = useState(0);
   const [alreadyOwned, setAlreadyOwned] = useState(0);
 
-  const [page, setPage] = useState(0);
-  const [takenSlots, setTakenSlots] = useState(new Set());
-  const [loadingPage, setLoadingPage] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selected, setSelected] = useState([]);
-  const [showAvailable, setShowAvailable] = useState(true);
-  const [showSelected, setShowSelected] = useState(true);
-  const [jumpValue, setJumpValue] = useState("");
+
+  const [searchValue, setSearchValue] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchMsg, setSearchMsg] = useState(null);
 
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
@@ -82,31 +82,23 @@ export default function DrawDetailPage() {
     load();
   }, [id]);
 
+  async function loadSuggestions() {
+    setLoadingSuggestions(true);
+    const { data } = await supabase.rpc("suggest_available_numbers", {
+      p_draw_id: id,
+      p_limit: SUGGESTION_COUNT
+    });
+    setSuggestions((data || []).map(function (r) { return r.display_number; }));
+    setLoadingSuggestions(false);
+  }
+
   useEffect(
     function () {
       if (!draw) return;
-      let cancelled = false;
-      async function loadPage() {
-        setLoadingPage(true);
-        const start = page * PAGE_SIZE + 1;
-        const end = Math.min(draw.total_tickets, start + PAGE_SIZE - 1);
-        const { data } = await supabase
-          .from("draw_taken_slots")
-          .select("ticket_slot")
-          .eq("draw_id", id)
-          .gte("ticket_slot", start)
-          .lte("ticket_slot", end);
-        if (!cancelled) {
-          setTakenSlots(new Set((data || []).map(function (r) { return r.ticket_slot; })));
-          setLoadingPage(false);
-        }
-      }
-      loadPage();
-      return function () {
-        cancelled = true;
-      };
+      loadSuggestions();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [draw, page, id]
+    [draw, id]
   );
 
   if (!draw || !checkedAuth) {
@@ -116,22 +108,15 @@ export default function DrawDetailPage() {
   const remaining = draw.total_tickets - draw.sold_tickets;
   const soldPct = Math.min(100, Math.round((draw.sold_tickets / draw.total_tickets) * 100));
   const maxSelectable = Math.max(0, Math.min(draw.max_tickets_per_user - alreadyOwned, remaining));
-  const totalPages = Math.ceil(draw.total_tickets / PAGE_SIZE);
   const total = selected.length * draw.ticket_price;
   const drawOpen = draw.status === "active" && remaining > 0;
   const width = digitWidth(draw.total_tickets);
 
-  const start = page * PAGE_SIZE + 1;
-  const end = Math.min(draw.total_tickets, start + PAGE_SIZE - 1);
-  const pageSlots = [];
-  for (let n = start; n <= end; n++) pageSlots.push(n);
-
-  function toggleSlot(n) {
+  function addNumber(n) {
     if (!loggedIn) {
       router.push("/auth");
       return;
     }
-    if (takenSlots.has(n)) return;
     setSelected(function (prev) {
       if (prev.includes(n)) return prev.filter(function (x) { return x !== n; });
       if (prev.length >= maxSelectable) return prev;
@@ -139,11 +124,41 @@ export default function DrawDetailPage() {
     });
   }
 
-  function jumpToNumber() {
-    const n = parseInt(jumpValue, 10);
-    if (!n || n < 1 || n > draw.total_tickets) return;
-    setPage(Math.floor((n - 1) / PAGE_SIZE));
-    setJumpValue("");
+  async function handleSearch() {
+    setSearchMsg(null);
+    const n = parseInt(searchValue, 10);
+    if (!n || n < 1 || n > draw.total_tickets) {
+      setSearchMsg({ type: "error", text: "أدخل رقماً بين 1 و" + formatSyp(draw.total_tickets) });
+      return;
+    }
+    if (!loggedIn) {
+      router.push("/auth");
+      return;
+    }
+    setSearching(true);
+    const { data } = await supabase
+      .from("draw_taken_slots")
+      .select("display_number")
+      .eq("draw_id", id)
+      .eq("display_number", n)
+      .maybeSingle();
+    setSearching(false);
+
+    if (data) {
+      setSearchMsg({ type: "error", text: "الرقم " + padNum(n, width) + " غير متاح، جرّب رقماً آخر" });
+      return;
+    }
+    if (selected.includes(n)) {
+      setSearchMsg({ type: "error", text: "لقد اخترت هذا الرقم بالفعل" });
+      return;
+    }
+    if (selected.length >= maxSelectable) {
+      setSearchMsg({ type: "error", text: "وصلت للحد الأقصى من التذاكر المسموح بها" });
+      return;
+    }
+    setSelected(function (prev) { return [...prev, n]; });
+    setSearchMsg({ type: "success", text: "الرقم " + padNum(n, width) + " متاح وتمت إضافته لاختيارك" });
+    setSearchValue("");
   }
 
   async function handleConfirm() {
@@ -161,7 +176,7 @@ export default function DrawDetailPage() {
     const res = await fetch("/api/purchase/select", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token },
-      body: JSON.stringify({ draw_id: draw.id, ticket_slots: selected })
+      body: JSON.stringify({ draw_id: draw.id, ticket_numbers: selected })
     });
     const data = await res.json();
     setConfirming(false);
@@ -247,103 +262,108 @@ export default function DrawDetailPage() {
         <p className="text-[var(--ember)] font-bold text-center py-6">هذا السحب غير متاح للشراء حالياً.</p>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold">اختر أرقام تذاكرك</h2>
             <span className="text-xs text-gray-500">يمكنك اختيار حتى {maxSelectable} تذاكر</span>
           </div>
 
-          <div className="flex items-center gap-4 mb-3 text-sm">
-            <label className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={showSelected}
-                onChange={function () {
-                  setShowSelected(!showSelected);
-                }}
-              />
-              مختار
-            </label>
-            <label className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={showAvailable}
-                onChange={function () {
-                  setShowAvailable(!showAvailable);
-                }}
-              />
-              متاح
-            </label>
-
-            <div className="flex-1 flex items-center gap-1.5 justify-end">
+          {/* Search for a specific number */}
+          <div className="mb-4">
+            <p className="text-sm font-bold mb-2">ابحث عن رقم معيّن</p>
+            <div className="flex items-center gap-2">
               <input
                 type="text"
                 inputMode="numeric"
-                value={jumpValue}
+                value={searchValue}
                 onChange={function (e) {
-                  setJumpValue(e.target.value.replace(/\D/g, ""));
+                  setSearchValue(e.target.value.replace(/\D/g, ""));
+                  setSearchMsg(null);
                 }}
-                placeholder="رقم"
-                className="w-16 border border-[var(--line)] rounded-lg px-2 py-1 text-xs font-mono-num text-center"
+                onKeyDown={function (e) {
+                  if (e.key === "Enter") handleSearch();
+                }}
+                placeholder={"مثال: " + padNum(1, width)}
+                className="flex-1 border border-[var(--line)] rounded-xl px-3 py-2 text-sm font-mono-num"
               />
-              <button onClick={jumpToNumber} className="text-xs font-bold text-[var(--emerald)]">
-                انتقال
+              <button
+                onClick={handleSearch}
+                disabled={searching || !searchValue}
+                className="btn-primary disabled:opacity-40 px-5"
+              >
+                {searching ? "…" : "بحث"}
               </button>
             </div>
+            {searchMsg && (
+              <p
+                className={
+                  "text-xs mt-2 font-bold " +
+                  (searchMsg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")
+                }
+              >
+                {searchMsg.text}
+              </p>
+            )}
           </div>
 
-          <div className={"grid grid-cols-4 gap-2 mb-3 " + (loadingPage ? "opacity-40" : "")}>
-            {pageSlots.map(function (n) {
-              const taken = takenSlots.has(n);
+          {/* 9 random available suggestions */}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-bold">أرقام مقترحة</p>
+            <button
+              onClick={loadSuggestions}
+              disabled={loadingSuggestions}
+              className="text-xs font-bold text-[var(--emerald)] disabled:opacity-40"
+            >
+              {loadingSuggestions ? "جارِ التحديث…" : "عرض أرقام أخرى ↻"}
+            </button>
+          </div>
+
+          <div className={"grid grid-cols-3 gap-2 mb-5 " + (loadingSuggestions ? "opacity-40" : "")}>
+            {suggestions.map(function (n) {
               const isSelected = selected.includes(n);
-              if (taken && !showAvailable && !isSelected) return null;
-              if (!taken && isSelected && !showSelected) return null;
-              if (!taken && !isSelected && !showAvailable) return null;
-
-              let cls = "ticket-chip justify-center ";
-              if (taken) cls += "opacity-50 cursor-not-allowed";
-              else if (isSelected) cls += "!bg-[var(--emerald)] !border-[var(--emerald)] !text-white cursor-pointer";
-              else cls += "cursor-pointer hover:border-[var(--emerald)]";
-
               return (
                 <button
                   key={n}
                   type="button"
-                  disabled={taken}
                   onClick={function () {
-                    toggleSlot(n);
+                    addNumber(n);
                   }}
-                  className={cls}
+                  className={
+                    "ticket-chip justify-center " +
+                    (isSelected
+                      ? "!bg-[var(--emerald)] !border-[var(--emerald)] !text-white"
+                      : "hover:border-[var(--emerald)]")
+                  }
                 >
-                  {taken ? "—" : padNum(n, width)}
+                  {padNum(n, width)}
                   {isSelected && <CheckCircleIcon className="w-3.5 h-3.5 mr-1" strokeWidth={2.4} />}
                 </button>
               );
             })}
+            {suggestions.length === 0 && !loadingSuggestions && (
+              <p className="col-span-3 text-center text-sm text-gray-400 py-4">لا توجد أرقام متاحة حالياً.</p>
+            )}
           </div>
 
-          <div className="flex items-center justify-between text-sm mb-8">
-            <button
-              disabled={page === 0}
-              onClick={function () {
-                setPage(function (p) { return Math.max(0, p - 1); });
-              }}
-              className="px-3 py-1.5 rounded-lg border border-[var(--line)] disabled:opacity-40"
-            >
-              السابق
-            </button>
-            <span className="text-gray-500 text-xs">
-              الصفحة {page + 1} من {totalPages}
-            </span>
-            <button
-              disabled={page >= totalPages - 1}
-              onClick={function () {
-                setPage(function (p) { return Math.min(totalPages - 1, p + 1); });
-              }}
-              className="px-3 py-1.5 rounded-lg border border-[var(--line)] disabled:opacity-40"
-            >
-              التالي
-            </button>
-          </div>
+          {selected.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm font-bold mb-2">أرقامك المختارة ({selected.length})</p>
+              <div className="flex flex-wrap gap-2">
+                {selected.map(function (n) {
+                  return (
+                    <button
+                      key={n}
+                      onClick={function () {
+                        addNumber(n);
+                      }}
+                      className="ticket-chip !bg-[var(--emerald)] !border-[var(--emerald)] !text-white"
+                    >
+                      {padNum(n, width)} ✕
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {error && <p className="text-[var(--ember)] font-bold text-sm mb-3 text-center">{error}</p>}
 
@@ -414,10 +434,10 @@ function PurchaseSuccess({ draw, result, width, balance }) {
 
       <p className="text-sm text-gray-500 mb-2 text-right">أرقام تذاكرك</p>
       <div className="grid grid-cols-2 gap-3 mb-5">
-        {result.ticket_slots.map(function (slot) {
+        {result.ticket_numbers.map(function (n) {
           return (
-            <div key={slot} className="card py-3">
-              <p className="font-mono-num font-bold text-lg">#{padNum(slot, width)}</p>
+            <div key={n} className="card py-3">
+              <p className="font-mono-num font-bold text-lg">#{padNum(n, width)}</p>
               <span className="badge-verified mt-1">
                 <CheckCircleIcon className="w-3.5 h-3.5" strokeWidth={2.2} />
                 مملوكة لك
