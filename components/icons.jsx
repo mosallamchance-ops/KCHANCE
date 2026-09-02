@@ -181,6 +181,43 @@ export function TrophyIcon(props) {
   );
 }
 
+export function CheckCircleIcon(props) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.3 12.2 2.4 2.4 5-5.2" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon(props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M9.5 5.5 16 12l-6.5 6.5" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="18" cy="5.5" r="2.3" />
+      <circle cx="6" cy="12" r="2.3" />
+      <circle cx="18" cy="18.5" r="2.3" />
+      <path d="m8.1 10.8 7.8-4.4M8.1 13.2l7.8 4.4" />
+    </svg>
+  );
+}
+
+export function ReceiptIcon(props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 3.5h12v17l-2.2-1.5-2.2 1.5-2.2-1.5-2.2 1.5L6 20.5v-6" />
+      <path d="M9 8h6M9 11.5h6" />
+    </svg>
+  );
+}
+
 export function CalendarIcon(props) {
   return (
     <svg {...base(props)}>
