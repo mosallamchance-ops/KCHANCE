@@ -221,7 +221,7 @@ export default function AdminDepositsPage() {
                   <p className="font-bold">
                     {d.users?.first_name} {d.users?.last_name} — {d.users?.phone}
                   </p>
-                  <p className="font-mono-num">المبلغ: ${d.amount}</p>
+                  <p className="font-mono-num">المبلغ: {d.amount} ل.س</p>
                   <p>رقم العملية: {d.transaction_code}</p>
                   <p>المحفظة المرسلة: {d.sender_wallet}</p>
                   <p className="text-gray-400">{new Date(d.created_at).toLocaleString("ar")}</p>

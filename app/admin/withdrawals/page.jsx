@@ -53,7 +53,7 @@ export default function AdminWithdrawalsPage() {
                 <p className="font-bold">
                   {w.users?.first_name} {w.users?.last_name} — {w.users?.phone}
                 </p>
-                <p>المبلغ: ${w.amount}</p>
+                <p>المبلغ: {w.amount} ل.س</p>
                 <p>عنوان المحفظة: {w.wallet_address}</p>
                 <p className="text-gray-400">{new Date(w.created_at).toLocaleString("ar")}</p>
               </div>

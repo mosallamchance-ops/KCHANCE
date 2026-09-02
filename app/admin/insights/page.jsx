@@ -143,15 +143,15 @@ export default function AdminInsightsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="card text-center">
                 <p className="text-xs text-gray-500">إجمالي إيرادات التذاكر</p>
-                <p className="font-display text-xl text-[var(--emerald)]">${rev.total_ticket_revenue}</p>
+                <p className="font-display text-xl text-[var(--emerald)]">{rev.total_ticket_revenue} ل.س</p>
               </div>
               <div className="card text-center">
                 <p className="text-xs text-gray-500">إجمالي الجوائز النقدية المدفوعة</p>
-                <p className="font-display text-xl text-[var(--ember)]">${rev.total_cash_prizes_paid}</p>
+                <p className="font-display text-xl text-[var(--ember)]">{rev.total_cash_prizes_paid} ل.س</p>
               </div>
               <div className="card text-center">
                 <p className="text-xs text-gray-500">قيمة الجوائز العينية (منتجات)</p>
-                <p className="font-display text-xl text-[var(--gold-deep)]">${rev.total_product_prizes_value}</p>
+                <p className="font-display text-xl text-[var(--gold-deep)]">{rev.total_product_prizes_value} ل.س</p>
               </div>
               <div className="card text-center">
                 <p className="text-xs text-gray-500">هامش الربح التقديري</p>
@@ -160,7 +160,7 @@ export default function AdminInsightsPage() {
                     "font-display text-xl " + (netMargin >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")
                   }
                 >
-                  ${netMargin}
+                  {netMargin} ل.س
                 </p>
               </div>
             </div>
@@ -237,8 +237,8 @@ export default function AdminInsightsPage() {
                       <td className="p-2 font-bold">{d.product_name}</td>
                       <td className="p-2">{d.status}</td>
                       <td className="p-2 font-mono-num">{d.sell_through_pct ?? 0}%</td>
-                      <td className="p-2 font-mono-num text-[var(--emerald)]">${d.revenue}</td>
-                      <td className="p-2 font-mono-num">${d.prize_value}</td>
+                      <td className="p-2 font-mono-num text-[var(--emerald)]">{d.revenue} ل.س</td>
+                      <td className="p-2 font-mono-num">{d.prize_value} ل.س</td>
                       <td className="p-2 text-gray-400 text-xs">
                         {new Date(d.created_at).toLocaleDateString("ar")}
                       </td>
@@ -340,10 +340,10 @@ export default function AdminInsightsPage() {
             <div className="card text-center">
               <p className="text-xs text-gray-500">مبالغ مشحونة (14 يوم)</p>
               <p className="font-display text-xl text-[var(--emerald)]">
-                $
                 {data.dailyStats.reduce(function (s, d) {
                   return s + Number(d.deposits_amount);
-                }, 0)}
+                }, 0)}{" "}
+                ل.س
               </p>
             </div>
           </div>
@@ -366,7 +366,7 @@ export default function AdminInsightsPage() {
                   </div>
                   <div className="text-left">
                     <p className="font-mono-num font-bold text-[var(--emerald)]">{u.total_tickets} تذكرة</p>
-                    <p className="font-mono-num text-xs text-gray-400">${u.total_spent}</p>
+                    <p className="font-mono-num text-xs text-gray-400">{u.total_spent} ل.س</p>
                   </div>
                 </div>
               );
@@ -449,7 +449,7 @@ export default function AdminInsightsPage() {
                       آخر شراء: {new Date(u.last_purchase_at).toLocaleDateString("ar")}
                     </p>
                     <p className="font-mono-num text-gray-500">
-                      {u.total_tickets} تذكرة — ${u.total_spent}
+                      {u.total_tickets} تذكرة — {u.total_spent} ل.س
                     </p>
                   </div>
                 </div>

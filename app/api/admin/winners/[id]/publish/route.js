@@ -49,7 +49,7 @@ export async function PUT(request, { params }) {
     const message =
       existing.prize_type === "product"
         ? "لقد فزت بالمنتج في السحب: " + productName + ". سيتم التواصل معك لتسليم الجائزة."
-        : "لقد فزت بجائزة نقدية قدرها $" + existing.prize_amount + ". سيتم التواصل معك لتسليمها.";
+        : "لقد فزت بجائزة نقدية قدرها " + existing.prize_amount + " ل.س. سيتم التواصل معك لتسليمها.";
 
     await supabaseAdmin.from("notifications").insert({
       user_id: existing.user_id,

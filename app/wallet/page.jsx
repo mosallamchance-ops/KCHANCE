@@ -101,7 +101,7 @@ export default function WalletPage() {
       <div>
         <div className="card bg-[var(--ink)] text-white border-none">
           <p className="text-white/60 text-sm">الرصيد الحالي</p>
-          <p className="font-display text-4xl text-[var(--gold)]">${balance}</p>
+          <p className="font-display text-4xl text-[var(--gold)]">{balance} ل.س</p>
           <p className="text-xs text-white/40 mt-2">
             ملاحظة: لا يمكن سحب الرصيد. الجوائز النقدية تُرسل كهدية مباشرة من الإدارة عند الفوز.
           </p>
@@ -211,7 +211,7 @@ export default function WalletPage() {
                 </div>
                 <p className={"font-mono-num font-bold " + (t.amount >= 0 ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
                   {t.amount >= 0 ? "+" : ""}
-                  {t.amount}$
+                  {t.amount} ل.س
                 </p>
               </div>
             );

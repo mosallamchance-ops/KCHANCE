@@ -143,7 +143,7 @@ export default function AdminUserDetailPage() {
             <p className="text-gray-500">⚧ الجنس: {user.gender || "—"}</p>
             <p className="text-gray-500">📍 المحافظة: {user.province || "—"}</p>
             <p className="text-gray-500">💳 رقم المحفظة: {user.wallet_number || "—"}</p>
-            <p className="font-bold text-brand-600 text-base mt-1">الرصيد: ${user.balance}</p>
+            <p className="font-bold text-brand-600 text-base mt-1">الرصيد: {user.balance} ل.س</p>
             <p>
               الحالة:{" "}
               <span className={user.status === "active" ? "text-green-600" : "text-red-600"}>
@@ -174,8 +174,8 @@ export default function AdminUserDetailPage() {
                 أول شراء تذكرة:{" "}
                 {lifecycle.firstPurchaseDate ? lifecycle.firstPurchaseDate.toLocaleDateString("ar") : "لم يشترِ بعد"}
               </p>
-              <p className="text-gray-500 font-mono-num">إجمالي المشحون: ${lifecycle.totalDeposited}</p>
-              <p className="text-gray-500 font-mono-num">إجمالي المصروف على تذاكر: ${lifecycle.totalSpent}</p>
+              <p className="text-gray-500 font-mono-num">إجمالي المشحون: {lifecycle.totalDeposited} ل.س</p>
+              <p className="text-gray-500 font-mono-num">إجمالي المصروف على تذاكر: {lifecycle.totalSpent} ل.س</p>
               <p className="text-gray-500 font-mono-num">عدد عمليات الشراء: {lifecycle.purchaseCount}</p>
               <p className="text-gray-500 font-mono-num">عدد مرات الفوز: {lifecycle.winCount}</p>
             </div>
@@ -273,7 +273,7 @@ export default function AdminUserDetailPage() {
                 <div key={w.id} className="card text-sm">
                   <p className="font-bold">{w.draws?.products?.name}</p>
                   <p>
-                    {w.prize_type === "product" ? "المنتج" : "$" + w.prize_amount} — {w.status}
+                    {w.prize_type === "product" ? "المنتج" : w.prize_amount + " ل.س"} — {w.status}
                   </p>
                 </div>
               );
@@ -311,7 +311,7 @@ export default function AdminUserDetailPage() {
                   </div>
                   <p className={t.amount >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
                     {t.amount >= 0 ? "+" : ""}
-                    {t.amount}$
+                    {t.amount} ل.س
                   </p>
                 </div>
               );

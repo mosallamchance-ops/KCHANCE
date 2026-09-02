@@ -77,7 +77,7 @@ export default function AdminWinnersPage() {
                     {w.users?.first_name} {w.users?.last_name} — {w.users?.phone}
                   </p>
                   <p className="text-gray-500 font-mono-num">
-                    {w.prize_type === "product" ? "جائزة: المنتج" : "جائزة نقدية: $" + w.prize_amount}
+                    {w.prize_type === "product" ? "جائزة: المنتج" : "جائزة نقدية: " + w.prize_amount + " ل.س"}
                   </p>
                   <p className="text-gray-400">{new Date(w.created_at).toLocaleDateString("ar")}</p>
 

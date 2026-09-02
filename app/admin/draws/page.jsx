@@ -61,7 +61,7 @@ export default function AdminDrawsListPage() {
                     {d.products?.name}
                   </p>
                   <p className="text-gray-500 font-mono-num">
-                    {d.sold_tickets} / {d.total_tickets} تذكرة — ${d.ticket_price} —{" "}
+                    {d.sold_tickets} / {d.total_tickets} تذكرة — {d.ticket_price} ل.س —{" "}
                     <span className={statusColor[d.status]}>{statusAr[d.status]}</span>
                   </p>
                 </div>

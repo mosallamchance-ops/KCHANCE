@@ -101,7 +101,7 @@ export default function MyPrizesPage() {
             <div key={p.id} className="card">
               <p className="font-bold">{p.draws?.products?.name}</p>
               <p className="text-sm text-gray-500 font-mono-num">
-                {p.prize_type === "product" ? "جائزة: المنتج" : "جائزة نقدية: $" + p.prize_amount}
+                {p.prize_type === "product" ? "جائزة: المنتج" : "جائزة نقدية: " + p.prize_amount + " ل.س"}
               </p>
               <p className="text-sm text-gray-500">تاريخ الفوز: {new Date(p.created_at).toLocaleDateString("ar")}</p>
               <p className="text-sm font-bold mt-1 text-[var(--emerald)]">حالة الاستلام: {statusAr[p.status]}</p>

@@ -29,7 +29,7 @@ export default async function ResultsPage() {
                   <p className="text-sm text-gray-500 font-mono-num">التذكرة: #{r.winning_ticket_number}</p>
                 )}
                 <p className="text-sm text-[var(--emerald)] font-bold mt-1">
-                  {r.prize_type === "product" ? "بيع كامل للتذاكر" : "جائزة نقدية $" + r.prize_amount}
+                  {r.prize_type === "product" ? "بيع كامل للتذاكر" : "جائزة نقدية " + r.prize_amount + " ل.س"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">{new Date(r.draw_date).toLocaleDateString("ar")}</p>
               </div>

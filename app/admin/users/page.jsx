@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
                   </p>
                   <p className="text-gray-500 font-mono-num">{u.phone || "بدون رقم هاتف"}</p>
                 </div>
-                <p className="font-bold font-mono-num text-[var(--emerald)]">${u.balance}</p>
+                <p className="font-bold font-mono-num text-[var(--emerald)]">{u.balance} ل.س</p>
               </Link>
             );
           })}
