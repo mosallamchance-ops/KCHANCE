@@ -74,6 +74,7 @@ export default function Nav() {
   if (loggedIn) {
     mobileLinks.push(
       { href: "/account", label: "حسابي" },
+      { href: "/account/tickets", label: "تذاكري" },
       { href: "/wallet", label: "رصيدي" },
       { href: "/support", label: "الدعم" }
     );
@@ -94,6 +95,9 @@ export default function Nav() {
             <>
               <a href="/account" className={linkClass}>
                 حسابي
+              </a>
+              <a href="/account/tickets" className={linkClass}>
+                تذاكري
               </a>
               <a href="/wallet" className={linkClass}>
                 رصيدي
