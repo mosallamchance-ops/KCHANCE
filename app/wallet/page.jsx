@@ -12,7 +12,7 @@ export default function WalletPage() {
   const [txns, setTxns] = useState([]);
   const [amount, setAmount] = useState("");
   const [code, setCode] = useState("");
-  const [senderWallet, setSenderWallet] = useState("");
+  const [senderName, setSenderName] = useState("");
   const [receiptPath, setReceiptPath] = useState(null);
   const [userId, setUserId] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -64,6 +64,12 @@ export default function WalletPage() {
   async function submitDeposit(e) {
     e.preventDefault();
     setMsg(null);
+
+    if (!amount || !code || !senderName.trim() || !receiptPath) {
+      setMsg("جميع الحقول مطلوبة، بما في ذلك صورة الإيصال.");
+      return;
+    }
+
     const {
       data: { user }
     } = await supabase.auth.getUser();
@@ -73,7 +79,7 @@ export default function WalletPage() {
       user_id: user.id,
       amount: Number(amount),
       transaction_code: code,
-      sender_wallet: senderWallet,
+      sender_wallet: senderName,
       receipt_url: receiptPath
     });
 
@@ -82,11 +88,13 @@ export default function WalletPage() {
       setMsg("تم إرسال طلب الشحن، بانتظار مراجعة الإدارة.");
       setAmount("");
       setCode("");
-      setSenderWallet("");
+      setSenderName("");
       setReceiptPath(null);
       loadData();
     }
   }
+
+  const canSubmit = Boolean(amount && code && senderName.trim() && receiptPath);
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
@@ -138,10 +146,11 @@ export default function WalletPage() {
 
         <form onSubmit={submitDeposit} className="card mt-4 space-y-2">
           <h2 className="font-bold mb-2">طلب شحن الرصيد</h2>
+          <p className="text-xs text-gray-500 -mt-1 mb-1">كل الحقول أدناه مطلوبة، بما في ذلك صورة الإيصال.</p>
           <input
             type="number"
             step="0.01"
-            placeholder="المبلغ المحول"
+            placeholder="المبلغ المحول *"
             className="w-full border border-[var(--line)] rounded-lg p-2"
             value={amount}
             onChange={function (e) {
@@ -150,7 +159,7 @@ export default function WalletPage() {
             required
           />
           <input
-            placeholder="رقم/كود الحوالة"
+            placeholder="رقم/كود الحوالة *"
             className="w-full border border-[var(--line)] rounded-lg p-2"
             value={code}
             onChange={function (e) {
@@ -159,18 +168,34 @@ export default function WalletPage() {
             required
           />
           <input
-            placeholder="رقم المحفظة المرسل منها"
+            placeholder="اسم المرسل *"
             className="w-full border border-[var(--line)] rounded-lg p-2"
-            value={senderWallet}
+            value={senderName}
             onChange={function (e) {
-              setSenderWallet(e.target.value);
+              setSenderName(e.target.value);
             }}
+            required
           />
           {userId && (
-            <FileUpload bucket="receipts" pathPrefix={userId} label="صورة إيصال التحويل" onUploaded={setReceiptPath} />
+            <FileUpload
+              bucket="receipts"
+              pathPrefix={userId}
+              label="صورة إيصال التحويل *"
+              onUploaded={setReceiptPath}
+            />
           )}
-          <button className="btn-primary w-full">إرسال طلب الشحن</button>
-          {msg && <p className="text-sm text-[var(--emerald)]">{msg}</p>}
+          <button className="btn-primary w-full disabled:opacity-40" disabled={!canSubmit}>
+            إرسال طلب الشحن
+          </button>
+          {msg && (
+            <p
+              className={
+                "text-sm " + (msg.startsWith("تم إرسال") ? "text-[var(--emerald)]" : "text-[var(--ember)]")
+              }
+            >
+              {msg}
+            </p>
+          )}
         </form>
       </div>
 
