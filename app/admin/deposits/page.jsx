@@ -223,7 +223,7 @@ export default function AdminDepositsPage() {
                   </p>
                   <p className="font-mono-num">المبلغ: {d.amount} ل.س</p>
                   <p>رقم العملية: {d.transaction_code}</p>
-                  <p>المحفظة المرسلة: {d.sender_wallet}</p>
+                  <p>اسم المرسل: {d.sender_name}</p>
                   <p className="text-gray-400">{new Date(d.created_at).toLocaleString("ar")}</p>
                   {d.receipt_url && (
                     <button

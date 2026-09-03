@@ -32,7 +32,10 @@ export async function PUT(request, { params }) {
 
   if (fetchErr) return adminErrorResponse(fetchErr, 404, "publish winner: fetch existing");
 
-  const { error } = await supabaseAdmin.from("winners").update({ published: !!published }).eq("id", params.id);
+  const { error } = await supabaseAdmin
+    .from("winners")
+    .update({ published: !!published, published_at: published ? new Date().toISOString() : null })
+    .eq("id", params.id);
   if (error) return adminErrorResponse(error, 400, "toggle winner publish status");
 
   await supabaseAdmin.from("audit_logs").insert({

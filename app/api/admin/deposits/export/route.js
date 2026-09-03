@@ -33,7 +33,7 @@ export async function GET(request) {
   const dateTo = searchParams.get("date_to");
 
   let filters =
-    "select=id,amount,transaction_code,sender_wallet,status,rejection_reason,receipt_url,created_at,users(first_name,last_name,phone)&order=created_at.desc";
+    "select=id,amount,transaction_code,sender_name,status,rejection_reason,receipt_url,created_at,users(first_name,last_name,phone)&order=created_at.desc";
   if (statusFilter !== "all") filters += "&status=eq." + statusFilter;
   if (dateFrom) filters += "&created_at=gte." + dateFrom + "T00:00:00";
   if (dateTo) filters += "&created_at=lte." + dateTo + "T23:59:59";
@@ -61,7 +61,7 @@ export async function GET(request) {
       "رقم الهاتف": d.users?.phone || "",
       المبلغ: d.amount,
       "رقم العملية": d.transaction_code || "",
-      "المحفظة المرسلة": d.sender_wallet || "",
+      "اسم المرسل": d.sender_name || "",
       الحالة: d.status,
       "سبب الرفض": d.rejection_reason || "",
       "رابط الإيصال": receiptLink,

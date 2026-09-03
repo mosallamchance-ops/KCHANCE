@@ -1,15 +1,17 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AuthPage() {
-  const [mode, setMode] = useState("login");
+function AuthPageInner() {
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState(searchParams.get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState(null);
   const router = useRouter();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -40,7 +42,7 @@ export default function AuthPage() {
         }).catch(function () {});
       }
 
-      router.push("/");
+      router.push(redirectTo);
     }
   }
 
@@ -103,5 +105,13 @@ export default function AuthPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageInner />
+    </Suspense>
   );
 }

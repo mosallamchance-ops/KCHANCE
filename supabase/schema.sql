@@ -81,7 +81,7 @@ create table public.deposits (
   user_id uuid not null references public.users(id),
   amount numeric(12,2) not null check (amount > 0),
   transaction_code text,
-  sender_wallet text,
+  sender_name text,
   receipt_url text,
   status text not null default 'pending' check (status in ('pending','approved','rejected')),
   admin_id uuid,

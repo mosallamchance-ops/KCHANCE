@@ -244,6 +244,16 @@ body {
   color: var(--emerald);
 }
 
+/* ---------- Bottom-sheet slide-in ---------- */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* ---------- Odometer-style countdown digits ---------- */
 .odometer-box {
   font-family: "IBM Plex Mono", monospace;

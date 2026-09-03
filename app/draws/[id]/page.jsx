@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import Countdown from "@/components/Countdown";
+import LoginRequiredSheet from "@/components/LoginRequiredSheet";
 import {
   ChevronLeftIcon,
   ShieldCheckIcon,
@@ -48,6 +49,7 @@ export default function DrawDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [showLoginSheet, setShowLoginSheet] = useState(false);
 
   useEffect(function () {
     async function load() {
@@ -114,7 +116,7 @@ export default function DrawDetailPage() {
 
   function addNumber(n) {
     if (!loggedIn) {
-      router.push("/auth");
+      setShowLoginSheet(true);
       return;
     }
     setSelected(function (prev) {
@@ -132,7 +134,7 @@ export default function DrawDetailPage() {
       return;
     }
     if (!loggedIn) {
-      router.push("/auth");
+      setShowLoginSheet(true);
       return;
     }
     setSearching(true);
@@ -395,6 +397,16 @@ export default function DrawDetailPage() {
           </div>
         </>
       )}
+
+      <LoginRequiredSheet
+        open={showLoginSheet}
+        onClose={function () {
+          setShowLoginSheet(false);
+        }}
+        productName={draw.products?.name}
+        productImage={draw.products?.image_url}
+        redirectPath={"/draws/" + draw.id}
+      />
     </div>
   );
 }
