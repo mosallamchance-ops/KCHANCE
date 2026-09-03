@@ -34,8 +34,7 @@ export default function WalletPage() {
   const [msg, setMsg] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const [expandedMethod, setExpandedMethod] = useState(null); // "bank" | "card" | "ecash" | null
-  const [showDepositForm, setShowDepositForm] = useState(false);
+  const [expandedMethod, setExpandedMethod] = useState(null); // "bank" | null
 
   function copyShamCashAddress() {
     navigator.clipboard.writeText(SHAM_CASH_ADDRESS).then(function () {
@@ -152,7 +151,7 @@ export default function WalletPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <a
+          
             href="#transactions"
             className="text-center bg-white/10 hover:bg-white/15 transition-colors rounded-xl py-2.5 text-sm font-bold"
           >
@@ -160,7 +159,6 @@ export default function WalletPage() {
           </a>
           <button
             onClick={function () {
-              setShowDepositForm(true);
               document.getElementById("deposit-methods")?.scrollIntoView({ behavior: "smooth" });
             }}
             className="text-center bg-white rounded-xl py-2.5 text-sm font-bold text-[var(--emerald-deep)]"
@@ -177,7 +175,7 @@ export default function WalletPage() {
 
         <div className="settings-group mb-5">
           <MethodRow
-            title="تحويل معتمد"
+            title="دفع بالكريبتو USDT"
             expanded={expandedMethod === "bank"}
             onToggle={function () {
               toggleMethod("bank");
@@ -187,103 +185,85 @@ export default function WalletPage() {
             <p className="text-sm break-all font-mono-num mt-1">رقم المحفظة: {WALLET_ADDRESS}</p>
             <p className="text-xs text-gray-500 mt-2">حوّل المبلغ إلى المحفظة أعلاه، ثم أرسل طلب شحن الرصيد أدناه.</p>
           </MethodRow>
+        </div>
 
-          <MethodRow
-            title="بطاقة شحن"
-            expanded={expandedMethod === "card"}
-            onToggle={function () {
-              toggleMethod("card");
-            }}
-          >
-            <p className="text-sm text-gray-500">الدفع ببطاقة الشحن قريباً. استخدم إحدى الطريقتين الأخريين حالياً.</p>
-          </MethodRow>
-
-          <MethodRow
-            title="الدفع الإلكتروني"
-            expanded={expandedMethod === "ecash"}
-            onToggle={function () {
-              toggleMethod("ecash");
-            }}
-          >
-            <p className="font-bold text-sm mb-3">الدفع عبر Sham Cash</p>
-            <div className="flex items-center gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/sham-cash-qr.jpeg"
-                alt="رمز Sham Cash"
-                className="w-24 h-24 rounded-xl border border-[var(--line)] object-cover flex-shrink-0"
-              />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-500 mb-1">امسح الرمز من تطبيق Sham Cash، أو انسخ العنوان:</p>
-                <p className="text-sm break-all font-mono-num" dir="ltr">
-                  {SHAM_CASH_ADDRESS}
-                </p>
-                <button
-                  type="button"
-                  onClick={copyShamCashAddress}
-                  className="mt-2 text-xs font-bold text-[var(--emerald)]"
-                >
-                  {copied ? "تم النسخ ✓" : "نسخ العنوان"}
-                </button>
-              </div>
+        <div className="card mb-5">
+          <h2 className="font-bold mb-3">شام كاش</h2>
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/sham-cash-qr.jpeg"
+              alt="رمز Sham Cash"
+              className="w-24 h-24 rounded-xl border border-[var(--line)] object-cover flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500 mb-1">امسح الرمز من تطبيق Sham Cash، أو انسخ العنوان:</p>
+              <p className="text-sm break-all font-mono-num" dir="ltr">
+                {SHAM_CASH_ADDRESS}
+              </p>
+              <button
+                type="button"
+                onClick={copyShamCashAddress}
+                className="mt-2 text-xs font-bold text-[var(--emerald)]"
+              >
+                {copied ? "تم النسخ ✓" : "نسخ العنوان"}
+              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-3">بعد التحويل، أرسل طلب شحن الرصيد أدناه مع صورة الإيصال.</p>
-          </MethodRow>
+          </div>
+          <p className="text-xs text-gray-500 mt-3">بعد التحويل، أرسل طلب شحن الرصيد أدناه مع صورة الإيصال.</p>
         </div>
       </div>
 
       {/* Deposit request form */}
-      {(showDepositForm || expandedMethod) && (
-        <form onSubmit={submitDeposit} className="card mb-6 space-y-2">
-          <h2 className="font-bold mb-1">طلب شحن الرصيد</h2>
-          <p className="text-xs text-gray-500 mb-1">كل الحقول أدناه مطلوبة، بما في ذلك صورة الإيصال.</p>
-          <input
-            type="number"
-            step="0.01"
-            placeholder="المبلغ المحول *"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={amount}
-            onChange={function (e) {
-              setAmount(e.target.value);
-            }}
-            required
+      <form onSubmit={submitDeposit} className="card mb-6 space-y-2">
+        <h2 className="font-bold mb-1">طلب شحن الرصيد</h2>
+        <p className="text-xs text-gray-500 mb-1">كل الحقول أدناه مطلوبة، بما في ذلك صورة الإيصال.</p>
+        <input
+          type="number"
+          step="0.01"
+          placeholder="المبلغ المحول *"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={amount}
+          onChange={function (e) {
+            setAmount(e.target.value);
+          }}
+          required
+        />
+        <input
+          placeholder="رقم/كود الحوالة *"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={code}
+          onChange={function (e) {
+            setCode(e.target.value);
+          }}
+          required
+        />
+        <input
+          placeholder="اسم المرسل *"
+          className="w-full border border-[var(--line)] rounded-lg p-2.5"
+          value={senderName}
+          onChange={function (e) {
+            setSenderName(e.target.value);
+          }}
+          required
+        />
+        {userId && (
+          <FileUpload
+            bucket="receipts"
+            pathPrefix={userId}
+            label="صورة إيصال التحويل *"
+            onUploaded={setReceiptPath}
           />
-          <input
-            placeholder="رقم/كود الحوالة *"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={code}
-            onChange={function (e) {
-              setCode(e.target.value);
-            }}
-            required
-          />
-          <input
-            placeholder="اسم المرسل *"
-            className="w-full border border-[var(--line)] rounded-lg p-2.5"
-            value={senderName}
-            onChange={function (e) {
-              setSenderName(e.target.value);
-            }}
-            required
-          />
-          {userId && (
-            <FileUpload
-              bucket="receipts"
-              pathPrefix={userId}
-              label="صورة إيصال التحويل *"
-              onUploaded={setReceiptPath}
-            />
-          )}
-          <button className="btn-primary w-full disabled:opacity-40" disabled={!canSubmit}>
-            إرسال طلب الشحن
-          </button>
-          {msg && (
-            <p className={"text-sm " + (msg.startsWith("تم إرسال") ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
-              {msg}
-            </p>
-          )}
-        </form>
-      )}
+        )}
+        <button className="btn-primary w-full disabled:opacity-40" disabled={!canSubmit}>
+          إرسال طلب الشحن
+        </button>
+        {msg && (
+          <p className={"text-sm " + (msg.startsWith("تم إرسال") ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
+            {msg}
+          </p>
+        )}
+      </form>
 
       {/* Transaction log */}
       <div id="transactions">
