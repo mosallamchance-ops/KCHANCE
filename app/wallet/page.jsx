@@ -151,12 +151,14 @@ export default function WalletPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          
-            href="#transactions"
+          <button
+            onClick={function () {
+              document.getElementById("transactions")?.scrollIntoView({ behavior: "smooth" });
+            }}
             className="text-center bg-white/10 hover:bg-white/15 transition-colors rounded-xl py-2.5 text-sm font-bold"
           >
             سجل العمليات
-          </a>
+          </button>
           <button
             onClick={function () {
               document.getElementById("deposit-methods")?.scrollIntoView({ behavior: "smooth" });
