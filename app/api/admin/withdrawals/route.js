@@ -1,27 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { adminErrorResponse } from "@/lib/apiError";
+import { requireAdminRole } from "@/lib/requireAdminRole";
 
 export const dynamic = "force-dynamic";
 
-async function requireAdmin(request) {
-  const authHeader = request.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-  if (userErr || !userData?.user) return null;
-
-  const { data: admin } = await supabaseAdmin
-    .from("admins")
-    .select("id, status")
-    .eq("id", userData.user.id)
-    .single();
-
-  if (!admin || admin.status !== "active") return null;
-  return admin;
-}
-
 export async function GET(request) {
-  const admin = await requireAdmin(request);
+  const admin = await requireAdminRole(request, ["finance_admin"]);
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
   const { data, error } = await supabaseAdmin
@@ -36,7 +21,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const admin = await requireAdmin(request);
+  const admin = await requireAdminRole(request, ["finance_admin"]);
   if (!admin) return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
 
   const { withdrawal_id, action, rejection_reason } = await request.json();

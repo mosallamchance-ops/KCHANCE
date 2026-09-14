@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireAdminRole } from "@/lib/requireAdminRole";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -8,20 +9,8 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function GET(request) {
-  const authHeader = request.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-  if (userErr || !userData?.user) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-  }
-
-  const { data: admin } = await supabaseAdmin
-    .from("admins")
-    .select("id, status")
-    .eq("id", userData.user.id)
-    .single();
-
-  if (!admin || admin.status !== "active") {
+  const admin = await requireAdminRole(request, ["support_admin"]);
+  if (!admin) {
     return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
   }
 

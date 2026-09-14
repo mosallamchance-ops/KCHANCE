@@ -1,24 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { adminErrorResponse } from "@/lib/apiError";
+import { requireAdminRole } from "@/lib/requireAdminRole";
 
 export async function POST(request) {
   try {
-    const authHeader = request.headers.get("authorization") || "";
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-    if (userErr || !userData?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-    }
-
-    // Confirm the caller is a registered admin — regular users can never hit this.
-    const { data: admin } = await supabaseAdmin
-      .from("admins")
-      .select("id, role, status")
-      .eq("id", userData.user.id)
-      .single();
-
-    if (!admin || admin.status !== "active") {
+    const admin = await requireAdminRole(request, ["finance_admin"]);
+    if (!admin) {
       return NextResponse.json({ error: "صلاحيات غير كافية" }, { status: 403 });
     }
 

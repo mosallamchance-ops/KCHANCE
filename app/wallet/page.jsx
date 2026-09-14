@@ -218,54 +218,54 @@ export default function WalletPage() {
 
       {/* Deposit request form */}
       <form onSubmit={submitDeposit} className="card mb-6 space-y-2">
-        <h2 className="font-bold mb-1">طلب شحن الرصيد</h2>
-        <p className="text-xs text-gray-500 mb-1">كل الحقول أدناه مطلوبة، بما في ذلك صورة الإيصال.</p>
-        <input
-          type="number"
-          step="0.01"
-          placeholder="المبلغ المحول *"
-          className="w-full border border-[var(--line)] rounded-lg p-2.5"
-          value={amount}
-          onChange={function (e) {
-            setAmount(e.target.value);
-          }}
-          required
-        />
-        <input
-          placeholder="رقم/كود الحوالة *"
-          className="w-full border border-[var(--line)] rounded-lg p-2.5"
-          value={code}
-          onChange={function (e) {
-            setCode(e.target.value);
-          }}
-          required
-        />
-        <input
-          placeholder="اسم المرسل *"
-          className="w-full border border-[var(--line)] rounded-lg p-2.5"
-          value={senderName}
-          onChange={function (e) {
-            setSenderName(e.target.value);
-          }}
-          required
-        />
-        {userId && (
-          <FileUpload
-            bucket="receipts"
-            pathPrefix={userId}
-            label="صورة إيصال التحويل *"
-            onUploaded={setReceiptPath}
+          <h2 className="font-bold mb-1">طلب شحن الرصيد</h2>
+          <p className="text-xs text-gray-500 mb-1">كل الحقول أدناه مطلوبة، بما في ذلك صورة الإيصال.</p>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="المبلغ المحول *"
+            className="w-full border border-[var(--line)] rounded-lg p-2.5"
+            value={amount}
+            onChange={function (e) {
+              setAmount(e.target.value);
+            }}
+            required
           />
-        )}
-        <button className="btn-primary w-full disabled:opacity-40" disabled={!canSubmit}>
-          إرسال طلب الشحن
-        </button>
-        {msg && (
-          <p className={"text-sm " + (msg.startsWith("تم إرسال") ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
-            {msg}
-          </p>
-        )}
-      </form>
+          <input
+            placeholder="رقم/كود الحوالة *"
+            className="w-full border border-[var(--line)] rounded-lg p-2.5"
+            value={code}
+            onChange={function (e) {
+              setCode(e.target.value);
+            }}
+            required
+          />
+          <input
+            placeholder="اسم المرسل *"
+            className="w-full border border-[var(--line)] rounded-lg p-2.5"
+            value={senderName}
+            onChange={function (e) {
+              setSenderName(e.target.value);
+            }}
+            required
+          />
+          {userId && (
+            <FileUpload
+              bucket="receipts"
+              pathPrefix={userId}
+              label="صورة إيصال التحويل *"
+              onUploaded={setReceiptPath}
+            />
+          )}
+          <button className="btn-primary w-full disabled:opacity-40" disabled={!canSubmit}>
+            إرسال طلب الشحن
+          </button>
+          {msg && (
+            <p className={"text-sm " + (msg.startsWith("تم إرسال") ? "text-[var(--emerald)]" : "text-[var(--ember)]")}>
+              {msg}
+            </p>
+          )}
+        </form>
 
       {/* Transaction log */}
       <div id="transactions">
