@@ -4,12 +4,9 @@ import { ShieldCheckIcon, ChevronLeftIcon } from "@/components/icons";
 
 /**
  * Bottom-sheet shown when a guest tries to select/search/confirm tickets.
- * The mockup this is based on showed an inline phone-number "continue" field,
- * but this app's actual auth is email/password (phone is stored as metadata,
- * not yet used for OTP login — see the "Next Steps" list). So instead of a
- * phone input, this offers the two real entry points (log in / create
- * account) and carries the current draw along via ?redirect= so the person
- * lands back exactly here once they're signed in.
+ * Offers the two real entry points (log in / create account) and carries
+ * the current draw along via ?redirect= so the person lands back exactly
+ * here once they're signed in.
  */
 export default function LoginRequiredSheet({ open, onClose, productName, productImage, redirectPath }) {
   const router = useRouter();

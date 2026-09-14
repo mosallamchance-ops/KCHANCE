@@ -1,31 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ResetPasswordPage() {
-  const [ready, setReady] = useState(false);
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(function (event) {
-      if (event === "PASSWORD_RECOVERY") {
-        setReady(true);
-      }
-    });
-
-    supabase.auth.getSession().then(function (result) {
-      if (result.data.session) setReady(true);
-    });
-
-    return function () {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -42,33 +25,21 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password: password });
     setLoading(false);
 
-    if (error) setMsg({ type: "error", text: error.message });
-    else {
-      setMsg({ type: "success", text: "تم تحديث كلمة المرور بنجاح! سيتم تحويلك الآن." });
-      setTimeout(function () {
-        router.push("/");
-      }, 1500);
+    if (error) {
+      setMsg({ type: "error", text: error.message });
+      return;
     }
-  }
 
-  if (!ready) {
-    return (
-      <div className="max-w-sm mx-auto card">
-        <p className="text-gray-500 text-sm">
-          ...جارِ التحقق من رابط إعادة التعيين. إذا لم يعمل هذا خلال لحظات، فقد يكون الرابط منتهي الصلاحية — يرجى طلب
-          رابط جديد من صفحة{" "}
-          <a href="/auth/forgot-password" className="text-[var(--emerald)] underline">
-            نسيت كلمة المرور
-          </a>
-          .
-        </p>
-      </div>
-    );
+    setMsg({ type: "success", text: "تم تعيين كلمة المرور الجديدة بنجاح." });
+    setTimeout(function () {
+      router.push("/auth");
+    }, 1500);
   }
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="font-display text-2xl mb-4">إعادة تعيين كلمة المرور</h1>
+      <h1 className="font-display text-2xl mb-4 text-center">تعيين كلمة مرور جديدة</h1>
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="password"
@@ -90,12 +61,13 @@ export default function ResetPasswordPage() {
           }}
           required
         />
-        <button disabled={loading} className="btn-primary w-full">
-          {loading ? "...جارِ الحفظ" : "حفظ كلمة المرور الجديدة"}
+        <button disabled={loading} className="btn-primary w-full disabled:opacity-50">
+          {loading ? "...جارِ الحفظ" : "حفظ كلمة المرور"}
         </button>
       </form>
+
       {msg && (
-        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+        <p className={"text-sm mt-3 text-center " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
           {msg.text}
         </p>
       )}

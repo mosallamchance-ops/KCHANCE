@@ -13,23 +13,21 @@ export default function ForgotPasswordPage() {
     setMsg(null);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/auth/reset-password"
+      redirectTo: (typeof window !== "undefined" ? window.location.origin : "") + "/auth/reset-password"
     });
 
     setLoading(false);
-
     if (error) setMsg({ type: "error", text: error.message });
-    else
-      setMsg({
-        type: "success",
-        text: "إذا كان هذا البريد مسجلاً لدينا، ستصلك رسالة تحتوي على رابط لإعادة تعيين كلمة المرور."
-      });
+    else setMsg({ type: "success", text: "إذا كان البريد مسجّلاً، ستصلك رسالة لإعادة تعيين كلمة المرور." });
   }
 
   return (
     <div className="max-w-sm mx-auto card">
-      <h1 className="font-display text-2xl mb-4">نسيت كلمة المرور؟</h1>
-      <p className="text-sm text-gray-500 mb-4">أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.</p>
+      <h1 className="font-display text-2xl mb-2 text-center">استعادة كلمة المرور</h1>
+      <p className="text-sm text-gray-500 text-center mb-4">
+        أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.
+      </p>
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="email"
@@ -41,18 +39,16 @@ export default function ForgotPasswordPage() {
           }}
           required
         />
-        <button disabled={loading} className="btn-primary w-full">
+        <button disabled={loading} className="btn-primary w-full disabled:opacity-50">
           {loading ? "...جارِ الإرسال" : "إرسال رابط إعادة التعيين"}
         </button>
       </form>
+
       {msg && (
-        <p className={"text-sm mt-3 " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
+        <p className={"text-sm mt-3 text-center " + (msg.type === "error" ? "text-[var(--ember)]" : "text-[var(--emerald)]")}>
           {msg.text}
         </p>
       )}
-      <a href="/auth" className="text-sm text-gray-500 mt-4 underline block">
-        العودة لتسجيل الدخول
-      </a>
     </div>
   );
 }

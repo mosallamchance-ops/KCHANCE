@@ -28,6 +28,7 @@ function initials(firstName) {
 export default function AccountPage() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [stats, setStats] = useState({ wonCount: 0, activeTickets: 0 });
   const [loading, setLoading] = useState(true);
   const [notifyResults, setNotifyResults] = useState(true);
@@ -41,6 +42,7 @@ export default function AccountPage() {
         router.push("/auth");
         return;
       }
+      setEmailConfirmed(Boolean(user.email_confirmed_at));
 
       const { data: userRow } = await supabase
         .from("users")
@@ -71,6 +73,12 @@ export default function AccountPage() {
     router.refresh();
   }
 
+  async function handleSignOutEverywhere() {
+    await supabase.auth.signOut({ scope: "global" });
+    router.push("/");
+    router.refresh();
+  }
+
   const fullName =
     profile && (profile.first_name || profile.last_name)
       ? [profile.first_name, profile.last_name].filter(Boolean).join(" ")
@@ -79,14 +87,11 @@ export default function AccountPage() {
 
   const accountRows = [
     { href: "/account/edit-profile", label: "البيانات الشخصية", icon: UserIcon },
-    { href: "/account/edit-profile", label: "رقم الهاتف والتحقق", icon: PhoneVerifyIcon },
+    { href: "/account/edit-profile", label: "رقم الهاتف", icon: PhoneVerifyIcon },
     { href: "/account/prizes", label: "العناوين واستلام الجوائز", icon: PinIcon }
   ];
 
-  const securityRows = [
-    { href: "/account/change-password", label: "رمز الدخول", icon: LockIcon },
-    { href: "/account/change-password", label: "الأجهزة المسجّلة", icon: DeviceIcon }
-  ];
+  const securityRows = [{ href: "/account/change-password", label: "كلمة المرور", icon: LockIcon }];
 
   const supportRows = [
     { href: "/support/how-it-works", label: "كيف تعمل السحويات؟", icon: ShieldQuestionIcon },
@@ -124,9 +129,9 @@ export default function AccountPage() {
           <p className="text-sm text-gray-500 font-mono-num" dir="ltr">
             {profile?.phone || "—"}
           </p>
-          <span className="badge-verified mt-1">
+          <span className={emailConfirmed ? "badge-verified mt-1" : "badge-pill pending mt-1"}>
             <ShieldCheckIcon className="w-3.5 h-3.5" strokeWidth={2.2} />
-            حساب موثّق
+            {emailConfirmed ? "حساب موثّق" : "بانتظار تأكيد البريد"}
           </span>
         </div>
       </div>
@@ -172,6 +177,13 @@ export default function AccountPage() {
             />
           </button>
         </div>
+        <button type="button" onClick={handleSignOutEverywhere} className="settings-row w-full text-right">
+          <div className="flex items-center gap-3">
+            <DeviceIcon className="w-5 h-5 text-[var(--ink)]/70" />
+            <span className="font-bold text-sm">تسجيل الخروج من جميع الأجهزة</span>
+          </div>
+          <ChevronLeftIcon className="w-4 h-4 text-[var(--line)]" />
+        </button>
       </SettingsSection>
 
       {/* New: الدعم والشفافية */}
