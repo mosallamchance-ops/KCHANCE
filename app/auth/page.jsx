@@ -1,5 +1,6 @@
 "use client";
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,12 +13,19 @@ function AuthPageInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setMsg(null);
+
+    if (mode === "signup" && !agreedToTerms) {
+      setMsg({ type: "error", text: "يجب الموافقة على الشروط وسياسة الخصوصية للمتابعة." });
+      return;
+    }
+
     setLoading(true);
 
     if (mode === "signup") {
@@ -29,7 +37,11 @@ function AuthPageInner() {
       setLoading(false);
       if (error) return setMsg({ type: "error", text: error.message });
       if (data.user) {
-        await supabase.from("users").upsert({ id: data.user.id, phone: phone });
+        await supabase.from("users").upsert({
+          id: data.user.id,
+          phone: phone,
+          terms_accepted_at: new Date().toISOString()
+        });
       }
       setMsg({ type: "success", text: "تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتفعيله." });
     } else {
@@ -90,6 +102,26 @@ function AuthPageInner() {
             }}
             required
           />
+        )}
+
+        {mode === "signup" && (
+          <label className="flex items-start gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={function (e) {
+                setAgreedToTerms(e.target.checked);
+              }}
+              className="mt-1"
+              required
+            />
+            <span>
+              أوافق على{" "}
+              <Link href="/support/terms" target="_blank" className="text-[var(--emerald)] font-bold underline">
+                الشروط وسياسة الخصوصية
+              </Link>
+            </span>
+          </label>
         )}
 
         <button disabled={loading} className="btn-primary w-full disabled:opacity-50">

@@ -197,10 +197,14 @@ export default function AccountPage() {
         تسجيل الخروج
       </button>
 
-      <div className="flex items-start gap-2 text-xs text-gray-500 bg-[var(--paper)] border border-[var(--line)] rounded-xl p-3">
+      <div className="flex items-start gap-2 text-xs text-gray-500 bg-[var(--paper)] border border-[var(--line)] rounded-xl p-3 mb-4">
         <ShieldCheckIcon className="w-8 h-8 text-[var(--emerald)] flex-shrink-0" strokeWidth={1.6} />
         <p>بياناتك محمية ولا نعرض اسمك الكامل في النتائج. نلتزم بأعلى معايير الأمان والخصوصية لحماية معلوماتك.</p>
       </div>
+
+      <Link href="/account/delete-account" className="block text-center text-xs text-gray-400 underline">
+        حذف الحساب
+      </Link>
     </div>
   );
 }
