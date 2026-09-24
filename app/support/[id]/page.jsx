@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import FileUpload from "@/components/FileUpload";
+import BackHeader from "@/components/BackHeader";
 
 const statusAr = { open: "مفتوحة", in_progress: "قيد المعالجة", closed: "مغلقة" };
 
@@ -73,6 +74,13 @@ export default function SupportThreadPage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
+      <BackHeader
+        crumbs={[
+          { label: "حسابي", href: "/account" },
+          { label: "الدعم", href: "/support" }
+        ]}
+        current={ticket.subject}
+      />
       <div className="card">
         <h1 className="font-bold text-lg">{ticket.subject}</h1>
         <p className="text-sm text-gray-500">الحالة: {statusAr[ticket.status]}</p>

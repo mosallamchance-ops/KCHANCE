@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import BackHeader from "@/components/BackHeader";
 import { ShieldCheckIcon, TicketIcon } from "@/components/icons";
 
 const timeline = [
@@ -25,6 +26,7 @@ const commitments = [
 export default function IntegrityPage() {
   return (
     <div className="pb-6">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="النزاهة وطريقة اختيار الفائز" />
       <PageHeader title="النزاهة وطريقة اختيار الفائز" />
 
       <div className="card mb-5 flex items-start gap-3">

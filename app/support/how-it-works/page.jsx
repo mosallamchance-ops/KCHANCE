@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import BackHeader from "@/components/BackHeader";
 import { TicketIcon, WalletIcon, TrophyIcon, ChevronLeftIcon } from "@/components/icons";
 
 const steps = [
@@ -23,6 +24,7 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <div className="pb-6">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="كيف تعمل السحويات؟" />
       <PageHeader title="كيف تعمل السحويات؟" />
 
       <div className="space-y-3 mb-6">

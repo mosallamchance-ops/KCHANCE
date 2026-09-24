@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DocumentIcon } from "@/components/icons";
+import BackHeader from "@/components/BackHeader";
 
 const terms = [
   {
@@ -262,6 +263,7 @@ export default function TermsPage() {
 
   return (
     <div className="pb-6">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="الشروط وسياسة الخصوصية" />
       <h1 className="font-display text-2xl mb-1">الشروط وسياسة الخصوصية</h1>
       <p className="text-sm text-gray-500 mb-5">منصة فُرصة</p>
 

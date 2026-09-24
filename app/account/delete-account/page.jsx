@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import BackHeader from "@/components/BackHeader";
 
 export default function DeleteAccountPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function DeleteAccountPage() {
 
   return (
     <div className="max-w-sm mx-auto card">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="حذف الحساب" />
       <h1 className="font-display text-2xl mb-4 text-[var(--ember)]">حذف الحساب</h1>
 
       <div className="text-sm text-gray-600 leading-relaxed space-y-2 bg-[var(--paper)] border border-[var(--line)] rounded-xl p-3 mb-4">

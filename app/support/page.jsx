@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import FileUpload from "@/components/FileUpload";
+import BackHeader from "@/components/BackHeader";
 
 const statusAr = { open: "مفتوحة", in_progress: "قيد المعالجة", closed: "مغلقة" };
 
@@ -71,6 +72,7 @@ export default function SupportPage() {
 
   return (
     <div className="space-y-6">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="الدعم" />
       <h1 className="text-xl font-bold">الدعم</h1>
 
       <form onSubmit={createTicket} className="card space-y-2">

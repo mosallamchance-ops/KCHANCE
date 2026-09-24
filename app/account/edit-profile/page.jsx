@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import BackHeader from "@/components/BackHeader";
 
 const provinces = [
   "دمشق",
@@ -101,6 +102,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="max-w-sm mx-auto card">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="البيانات الشخصية" />
       <h1 className="font-display text-2xl mb-4">معلوماتي الشخصية</h1>
 
       <div className="mb-3 text-sm text-gray-500 bg-[var(--paper)] rounded-lg p-2">

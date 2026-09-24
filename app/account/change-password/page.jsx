@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import BackHeader from "@/components/BackHeader";
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -50,6 +51,7 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="max-w-sm mx-auto card">
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="كلمة المرور" />
       <h1 className="font-display text-2xl mb-4">تغيير كلمة المرور</h1>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input

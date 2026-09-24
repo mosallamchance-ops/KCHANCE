@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import BackHeader from "@/components/BackHeader";
 
 const statusAr = {
   pending: "قيد الانتظار",
@@ -90,6 +91,7 @@ export default function MyPrizesPage() {
 
   return (
     <div>
+      <BackHeader crumbs={[{ label: "حسابي", href: "/account" }]} current="جوائزي" />
       <h1 className="font-display text-2xl mb-4">جوائزي</h1>
       <div className="space-y-3">
         {prizes.map(function (p) {
